@@ -22,7 +22,6 @@ func Update(ctx *fiber.Ctx) error {
 	if err := ctx.BodyParser(&p); err != nil {
 		return ctx.JSON(fiber.Map{"error": err.Error()})
 	}
-	db.DumpPrettyJson(p)
 	if err := p.Update(); err != nil {
 		return ctx.JSON(fiber.Map{"error": err.Error()})
 	}
