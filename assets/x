@@ -1,0 +1,16 @@
+npm i babel/runtime@latest
+npm i popperjs/core@latest
+npm i assert@latest
+npm i axios@latest
+npm i bootstrap@latest
+npm i esbuild@latest
+npm i esbuild-plugin-sass@latest
+npm i simplebar@latest
+npm i react@latest
+npm i react-bootstrap@latest
+npm i react-datepicker@latest
+npm i react-dom@latest
+npm i react-quill@latest
+npm i react-redux@latest
+npm i react-select@latest
+

@@ -1,0 +1,9 @@
+.idea/
+./starter
+tmp/
+data/
+public/js/main.js
+public/images/uploads
+.env
+assets/node_modules
+assets/js/temp/

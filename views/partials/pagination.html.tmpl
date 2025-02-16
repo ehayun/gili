@@ -1,0 +1,38 @@
+
+{{$pages := .pagination.Pages}}
+{{$total := .pagination.TotalPages}}
+{{$page := .pagination.Page }}
+{{$prev := .pagination.PrevPage }}
+{{$next := .pagination.NextPage}}
+{{$url := .pagination.Url }}
+
+{{$iType := .params.InvType}}
+
+{{if gt $total 1 }}
+<nav aria-label="...">
+    <ul class="pagination mt-1">
+        {{ if ne $prev 0 }}
+        <li class="page-item">
+            <a class="page-link" href="/{{$url}}?search={{.search}}&page={{$prev}}&type={{$iType}}" tabindex="-1"><<</a>
+        </li>
+        {{end}}
+
+
+        {{ range $pages }}
+        <li class="page-item">
+            {{ if eq . $page }}
+            <a class="page-link active" href="/{{$url}}/?page={{ . }}&search={{$.search}}&type={{$iType}}">{{ . }}</a>
+            {{ else }}<a class="page-link" href="/{{$url}}/?page={{ . }}&search={{$.search}}&type={{$iType}}">{{ . }}</a>
+            {{ end }}
+        </li>
+        {{ end }}
+
+        {{ if ne $next 0 }}
+        <li class="page-item">
+            <a class="page-link" href="/{{$url}}?search={{.search}}&page={{$next}}&type={{$iType}}">>></a>
+        </li>
+        {{end}}
+    </ul>
+</nav>
+{{end}}
+

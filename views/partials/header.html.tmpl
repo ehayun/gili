@@ -1,0 +1,44 @@
+<section class="container-fluid">
+    <nav class="navbar navbar-expand-md navbar-dark navbar-secondary {{topBG}} fixed-top py-2">
+        <div class="container">
+            <a class="navbar-brand"
+               href="https://he.wikipedia.org/wiki/%D7%94%D7%95%D7%A6%D7%90%D7%AA_%D7%91%D7%99%D7%AA%D7%9F"
+               target="_blank">
+                <img src="{{.params.Logo}}" width="43"/>
+            </a>
+            <a class="navbar-brand" href="https://9.freeacademic.com">
+                <img src="{{.params.Logo2}}" width="43"/>
+            </a>
+            <span class="text-danger me-2 fw-bold"><a class="text-decoration-none" href="/">{{_ .AppName}}</a></span>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor01"
+                    aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarColor01">
+                <ul class="navbar-nav me-auto ">
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" href="/admin/users">{{_ "Users"}}</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" href="/manager/gishur">{{_ "Gishur"}}</a>
+                    </li>
+                </ul>
+
+                <span id="user-messages" class="text-light p-2"></span>
+                <span class="text-light p-2 ">
+                {{if eq .curr_user.ID 0}}
+                <a href="/login" class="btn btn-info my-2 my-sm-0" type="submit">{{_ "Login"}}</a>
+                {{else}}
+                <form class="d-flex " method="post" action="/logout">
+                    <span class="text-primary p-2">{{.curr_user.LastName}} {{.curr_user.FirstName}} </span>
+                    <button class="btn btn-info my-2 my-sm-0" type="submit">{{_ "Logout"}}</button>
+                </form>
+                {{end}}
+                </span>
+            </div>
+        </div>
+    </nav>
+</section>
+
+

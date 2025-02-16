@@ -1,0 +1,33 @@
+<div class="container mt-4 p-2 col-md-12 col-lg-8">
+    <h5>{{_ "App"}} </h5>
+    {{if ne .errors nil}}
+    <div class="alert alert-danger" role="alert">
+        {{_ .errors }}
+    </div>
+    {{end}}
+
+    <div class="row d-flex justify-content-center align-items-center h-100 border rounded">
+        <div class="col col-lg-6 p-2">
+                <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-login-form/draw2.webp"
+                     class="img-fluid" alt="Sample image">
+        </div>
+        <div class="col col-lg-4 p-2">
+            <form class="mx-auto" method="post">
+                <input type="hidden" name="_csrf" value="{{.csrf_secret}}">
+
+                <div class="mb-3">
+                    <label for="exampleInputZehut1" class="form-label">{{_ "Email"}}</label>
+                    <input type="text" class="form-control" name="email" id="exampleInputZehut1"
+                           aria-describedby="zehutHelp">
+                </div>
+                <div class="mb-3">
+                    <label for="exampleInputPassword1" class="form-label">{{_ "Password"}}</label>
+                    <input type="password" name="password" class="form-control" id="exampleInputPassword1">
+                </div>
+
+                <button type="submit" class="btn btn-primary">{{_ "Login"}}</button>
+            </form>
+
+        </div>
+    </div>
+</div>
