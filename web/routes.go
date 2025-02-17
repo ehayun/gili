@@ -23,6 +23,7 @@ func routes(app *fiber.App) {
 	root.Get("/users", users.Index)
 	root.Get("/params", params.Index)
 	root.Get("/menus", menus.Index)
+	root.Get("/main-page", pages.MainPage)
 
 	api := app.Group("/api", mwIsLogin)
 	api.Get("/users", users.List)
