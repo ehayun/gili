@@ -1,5 +1,6 @@
 .idea/
 ./starter
+uploads/
 tmp/
 data/
 public/js/main.js

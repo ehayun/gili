@@ -2,6 +2,8 @@ package web
 
 import (
 	"gishur/controllers/auth"
+	"gishur/controllers/cards"
+	"gishur/controllers/carousels"
 	"gishur/controllers/homepage"
 	"gishur/controllers/menus"
 	"gishur/controllers/pages"
@@ -32,5 +34,10 @@ func routes(app *fiber.App) {
 	api.Get("/menus", menus.List)
 	api.Post("/menus", menus.Create)
 	api.Put("/menus/:id", menus.Update)
+	api.Get("/main-page", pages.GetMainPage)
+	api.Put("/pages/:slug?", pages.Update)
+	api.Post("/carousel", carousels.UpdateCarousel)
+	api.Put("/carousel/:id", carousels.UpdateCarousel)
+	api.Post("/cards", cards.UpdateCard)
 
 }

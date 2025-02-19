@@ -21,3 +21,10 @@ func (p *Page) GetPageBySlug(slug string) (Page, error) {
 	}
 	return page, nil
 }
+
+func (p *Page) Update() error {
+	if p.ID == 0 {
+		return MainDB.Create(p).Error
+	}
+	return MainDB.Save(p).Error
+}

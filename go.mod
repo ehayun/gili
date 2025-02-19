@@ -9,6 +9,7 @@ require (
 	github.com/gofiber/fiber/v2 v2.52.6
 	github.com/gofiber/template/html/v2 v2.1.3
 	github.com/nicksnyder/go-i18n/v2 v2.5.1
+	github.com/sirupsen/logrus v1.9.3
 	github.com/sujit-baniya/flash v0.1.9
 	github.com/urfave/cli/v2 v2.27.5
 	golang.org/x/crypto v0.33.0

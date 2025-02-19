@@ -6,6 +6,7 @@ import ReactDOM from "react-dom";
 import Users from "./users/users";
 import Params from "./params/Params";
 import Menus from "./menus/Menus";
+import MainPageEditor from "./Homepage/MainPageEditor";
 
 let p = document.getElementById("users-crud");
 
@@ -21,4 +22,9 @@ if (p) {
 p = document.getElementById("menus");
 if (p) {
     ReactDOM.render(<Menus/>, p)
+}
+
+p = document.getElementById("main-page");
+if (p) {
+    ReactDOM.render(<MainPageEditor/>, p)
 }
