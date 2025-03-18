@@ -43,6 +43,31 @@ const Cards = () => {
         fetchCards(currentPage, search);
     }, [currentPage, search]);
 
+    // Add this effect to reset form when editingCard is null
+    useEffect(() => {
+        if (editingCard === null) {
+            resetForm();
+        }
+    }, [editingCard]);
+
+    // Function to completely reset the form
+    const resetForm = () => {
+        // Reset the form element first
+        if (formRef.current) {
+            formRef.current.reset();
+        }
+
+        // Then reset all state
+        setFormData({
+            id: 0,
+            title: '',
+            content: '',
+            image_url: '',
+            order_num: 0
+        });
+        setSelectedFile(null);
+    };
+
     // Handle form input changes
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -113,15 +138,11 @@ const Cards = () => {
                 throw new Error(`Failed to ${editingCard ? 'update' : 'create'} card`);
             }
 
-            // Clear all form state after successful submission
-            setFormData({ id: 0, title: '', content: '', image_url: '', order_num: 0 });
-            setSelectedFile(null);
-            setEditingCard(null);
+            // Reset form and state
+            resetForm();
 
-            // Reset the file input to ensure it's cleared
-            if (formRef.current) {
-                formRef.current.reset();
-            }
+            // Clear editing state
+            setEditingCard(null);
 
             // Refresh data
             fetchCards(currentPage, search);
@@ -133,8 +154,7 @@ const Cards = () => {
     // Edit card
     const handleEdit = (card) => {
         // First clear any previous state to avoid data persistence issues
-        setFormData({ id: 0, title: '', content: '', image_url: '', order_num: 0 });
-        setSelectedFile(null);
+        resetForm();
 
         // Use setTimeout to ensure state has been cleared before setting new values
         setTimeout(() => {
@@ -146,7 +166,7 @@ const Cards = () => {
                 image_url: card.image_url || '',
                 order_num: Number(card.order_num) || 0
             });
-        }, 0);
+        }, 10);
     };
 
     // Delete card
@@ -204,9 +224,7 @@ const Cards = () => {
     // Cancel editing
     const handleCancel = () => {
         setEditingCard(null);
-        // Clear all form data
-        setFormData({ id: 0, title: '', content: '', image_url: '', order_num: 0 });
-        setSelectedFile(null);
+        // resetForm() will be called by the useEffect when editingCard changes to null
     };
 
     // Create HTML from content
