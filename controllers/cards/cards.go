@@ -14,6 +14,16 @@ func UpdateCard(ctx *fiber.Ctx) error {
 
 	var c db.Card
 	_ = ctx.BodyParser(&c)
+
+	on, _ := strconv.Atoi(ctx.FormValue("order_num", "1"))
+	c.OrderNum = int64(on)
+
+	id, err := ctx.ParamsInt("id", 0)
+	if err == nil {
+		c.Id = int64(id)
+	}
+	//db.DumpPrettyJson(c)
+
 	image, err := ctx.FormFile("image")
 	if err == nil {
 		outDir := "./uploads/cards/"
@@ -32,9 +42,6 @@ func UpdateCard(ctx *fiber.Ctx) error {
 			c.ImageUrl = old.ImageUrl
 		}
 	}
-
-	on, _ := strconv.Atoi(ctx.FormValue("order_num", "1"))
-	c.OrderNum = int64(on)
 
 	if c.Id == 0 {
 		if err := c.Create(); err != nil {

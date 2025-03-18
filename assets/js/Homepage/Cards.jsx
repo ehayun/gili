@@ -1,6 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import HebrewEditor from '../components/HebrewEditor';
 
 const Cards = () => {
+    // Use refs to track form elements
+    const formRef = useRef(null);
     const [cards, setCards] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -46,14 +49,24 @@ const Cards = () => {
         setFormData({ ...formData, [name]: value });
     };
 
+    // Handle rich text editor content changes
+    const handleEditorChange = (content) => {
+        setFormData({ ...formData, content });
+    };
+
     // Handle file selection
     const handleFileChange = (e) => {
-        setSelectedFile(e.target.files[0]);
+        if (e.target.files && e.target.files.length > 0) {
+            const file = e.target.files[0];
+            setSelectedFile(file);
 
-        // Update preview if file is selected
-        if (e.target.files[0]) {
-            const objectUrl = URL.createObjectURL(e.target.files[0]);
+            // Update preview with the new file
+            const objectUrl = URL.createObjectURL(file);
             setFormData(prev => ({ ...prev, image_url: objectUrl }));
+        } else {
+            // If the file input is cleared, also clear the preview
+            setSelectedFile(null);
+            setFormData(prev => ({ ...prev, image_url: editingCard?.image_url || '' }));
         }
     };
 
@@ -61,16 +74,23 @@ const Cards = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            // Validate form data before submission
+            if (!formData.title.trim()) {
+                setError("Title is required");
+                return;
+            }
+
             // Create a FormData object
             const multipartFormData = new FormData();
 
-            formData.order_num = Number(formData.order_num);
+            // Ensure order_num is a number
+            const orderNum = Number(formData.order_num);
 
             // Add all form fields to FormData
-            multipartFormData.append('id', Number(formData.id));
-            multipartFormData.append('title', formData.title);
-            multipartFormData.append('content', formData.content);
-            multipartFormData.append('order_num', formData.order_num);
+            multipartFormData.append('id', Number(formData.id || 0));
+            multipartFormData.append('title', formData.title.trim());
+            multipartFormData.append('content', formData.content || '');
+            multipartFormData.append('order_num', orderNum);
 
             // If there's a selected file, append it to FormData
             if (selectedFile) {
@@ -93,10 +113,17 @@ const Cards = () => {
                 throw new Error(`Failed to ${editingCard ? 'update' : 'create'} card`);
             }
 
-            // Reset form and refresh data
+            // Clear all form state after successful submission
             setFormData({ id: 0, title: '', content: '', image_url: '', order_num: 0 });
             setSelectedFile(null);
             setEditingCard(null);
+
+            // Reset the file input to ensure it's cleared
+            if (formRef.current) {
+                formRef.current.reset();
+            }
+
+            // Refresh data
             fetchCards(currentPage, search);
         } catch (err) {
             setError(err.message);
@@ -105,15 +132,21 @@ const Cards = () => {
 
     // Edit card
     const handleEdit = (card) => {
-        setEditingCard(card);
-        setFormData({
-            id: card.id,
-            title: card.title,
-            content: card.content,
-            image_url: card.image_url,
-            order_num: Number(card.order_num)
-        });
-        setSelectedFile(null); // Clear selected file when editing
+        // First clear any previous state to avoid data persistence issues
+        setFormData({ id: 0, title: '', content: '', image_url: '', order_num: 0 });
+        setSelectedFile(null);
+
+        // Use setTimeout to ensure state has been cleared before setting new values
+        setTimeout(() => {
+            setEditingCard(card);
+            setFormData({
+                id: card.id,
+                title: card.title || '',
+                content: card.content || '',
+                image_url: card.image_url || '',
+                order_num: Number(card.order_num) || 0
+            });
+        }, 0);
     };
 
     // Delete card
@@ -171,8 +204,14 @@ const Cards = () => {
     // Cancel editing
     const handleCancel = () => {
         setEditingCard(null);
+        // Clear all form data
         setFormData({ id: 0, title: '', content: '', image_url: '', order_num: 0 });
         setSelectedFile(null);
+    };
+
+    // Create HTML from content
+    const createMarkup = (htmlContent) => {
+        return { __html: htmlContent };
     };
 
     if (loading && cards.length === 0) {
@@ -195,7 +234,7 @@ const Cards = () => {
                             {editingCard ? 'Edit Card' : 'Add New Card'}
                         </div>
                         <div className="card-body">
-                            <form onSubmit={handleSubmit} encType="multipart/form-data">
+                            <form ref={formRef} onSubmit={handleSubmit} encType="multipart/form-data">
                                 <div className="mb-3">
                                     <label htmlFor="title" className="form-label">Title</label>
                                     <input
@@ -211,15 +250,10 @@ const Cards = () => {
 
                                 <div className="mb-3">
                                     <label htmlFor="content" className="form-label">Content</label>
-                                    <textarea
-                                        className="form-control"
-                                        id="content"
-                                        name="content"
-                                        rows="3"
+                                    <HebrewEditor
                                         value={formData.content}
-                                        onChange={handleInputChange}
-                                        required
-                                    ></textarea>
+                                        onChange={handleEditorChange}
+                                    />
                                 </div>
 
                                 <div className="mb-3">
@@ -400,7 +434,7 @@ const Cards = () => {
                             )}
                             <div className="card-body">
                                 <h5 className="card-title">{card.title}</h5>
-                                <p className="card-text">{card.content}</p>
+                                <div className="card-text" dangerouslySetInnerHTML={createMarkup(card.content)}></div>
                             </div>
                             <div className="card-footer bg-white">
                                 <small className="text-muted">Order: {card.order_num}</small>
