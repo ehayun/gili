@@ -1,50 +1,74 @@
 <div class="container">
 
-    <div class="content bg-info p-4 rounded">
-        {{.page.Content|safe}}
-    </div>
-</div>
-
-<div class=" hidden container">
-    <div class="clearfix mt-2 page-content">
-            <h2 class="mb-4">{{.page.Title}}</h2>
-        <img src="https://www.claudeusercontent.com/api/placeholder/500/600" alt="Sample Image"
-             class="img-fluid rounded shadow float-md-end me-md-4 mb-3 p-2">
-
-        <div class="text-content m-2 p-4">
-            <div class="content p-4 rounded ">
-                שלום לך, קצת עליי והניסיון שאני מביאה עימי לכל הליך והסכם שאני עורכת:
-
-                אני בוגרת הפקולטה למשפטים באוניברסיטה העברית בירושלים ובעלת תואר שני (MBA) במנהל עסקים מאוניברסיטת
-                Middlesex בלונדון, אנגליה.
-
-                לאחר מספר שנים של עבודה כעורכת דין, החלטתי שהדרך בה נערכים משפטים במדינת ישראל, הסחבת במערכת ואפשרויות
-                הפתרון המוגבלות, אני מעוניינת להשתמש בכישוריי המקצועיים בדרך אחרת. מספר שנים מועט ביותר קודם לכן, הגיע
-                אלינו לארץ מוסד "הגישור" וקיבל הכרה בחקיקה הקובעת את כלליו.
-
-                בשבילי זו הייתה אהבה ממבט ראשון. מעין "ארץ לעולם לא" של עולם המשפט. האפשרות של כל אחת ואחד מאיתנו
-                הנקלעים לסכסוך כזה או אחר, ליצר לעצמו את הפתרון, תפור לפי מידותיו האישיות, בתוך פרק זמן קצר ובעלות נמוכה
-                מאוד. אני בוגרת קורס גישור בסיסי, פרקטיקום בגישור בבית משפט וקורס גישור לענייני משפחה.
-
-                אני עוסקת בגישור מאז שנת 2003 ואוהבת כל רגע ורגע. גישור הוא שליחות עבורי. בעיניי, שני אנשים אשר חלקו
-                אהבה, חיים משותפים והביאו יחדיו ילדים לאוויר העולם, צריכים ויכולים למצוא את הדרך המכובדת והמכבדת ביותר
-                גם להיפרד זו מזה. בתור מי שעברה הליך גירושין בעצמה, מכירה את הקושי הרגשי העצום המלווה החלטה על פרידה
-                והתמודדות עם הקושי של הילדים – יש חכם כבעל ניסיון. אני מכירה את הדילמות. מכירה את המשבר ומכירה דרכים
-                יצירתיות לצאת ממנו בראש מורם. התשוקה לשפה הזו שנקראת גישור והבשורה שהיא מביאה עמה לקונפליקטים קטנים
-                כגדולים שאנו מנהלים בחיינו, הביאה אותי ללמד. אני מלמדת קורסי גישור בסיסי במכללת גומא גבים ומפיצה את שפת
-                הגישור לכל מי שחפץ ללמוד אותה.
-
-                במהלך שנת 2015 עברתי גם קורס אימון, קורס הכשרת מאמנים וסטאז' באימון וכיום אני משלבת את הכלים המופלאים
-                שעולם האימון מעניק לנו, עם הליך הגישור. זוגות המגיעים לערוך הסכמי ממון או הליך של גישור לגירושין, זוכים
-                גם ביכולת ללמוד כיצד לתקשר ביניהם גם בימים קשים. כיצד להיות הורים לילדים – אשר ההורים שלהם גרושים. כיצד
-                לייצר תקשורת ומערכת יחסים טובה לאורך שנים. זהו ערך מוסף גדול מאוד וייחודי מאוד שאני מביאה איתי לתהליך.
-
-                במידה ואתם מתלבטים , מעוניינים להתייעץ או לשמוע חוו"ד מקצועית – אני מזמינה אתכם ליצור עימי קשר דרך האתר
-                או בטלפון המפורסם בכותרת.
-                כל השירותים המפורטים באתר, ניתנים גם באופן מקוון.
-                אשמח לסייע לכם ככל האפשר – עו"ד ענת אשבל Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-                eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam
+    <div class="col-lg-12">
+        <!-- start With captions -->
+        <div class="card">
+            <div class="card-body">
+                <div id="carouselExampleCaptions" class="carousel slide carousel-dark" data-bs-ride="carousel">
+                    <ol class="carousel-indicators">
+                        {{range $idx, $val := .carousels}}
+                        <li data-bs-target="#carouselExampleCaptions" data-bs-slide-to="{{$idx}}" class="{{if eq $idx 0}}active{{end}}"></li>
+                        {{end}}
+                    </ol>
+                    <div class="carousel-inner">
+                        {{range $idx, $val := .carousels}}
+                        <div class="carousel-item  {{if eq $idx 0}}active{{end}}">
+                            <img src="{{.ImageUrl}}" class="d-block w-100" style="max-height: 400px; object-fit: cover;"  alt="modernize-img" />
+                            <div class="carousel-caption d-none d-md-block">
+                                <h5>{{.Title}}</h5>
+                                <p>
+                                   {{.Content}}
+                                </p>
+                            </div>
+                        </div>
+                        {{end}}
+                    </div>
+                    <a class="carousel-control-prev" href="#carouselExampleCaptions" role="button" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </a>
+                    <a class="carousel-control-next" href="#carouselExampleCaptions" role="button" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </a>
+                </div>
             </div>
         </div>
+        <!-- end With captions -->
     </div>
+
+    <div class="row">
+        <div class="col-sm-6 col-lg-3">
+            <div class="card shadow">
+                <div class="card-body p-4">
+                    <img src="/public/images/profile/user-3.jpg" alt="modernize-img" class="img-fluid rounded-circle mb-4"
+                         width="80" height="80">
+                    <h4 class="card-title">Charles Nunez</h4>
+                    <div class="d-flex align-items-center gap-4 mb-4">
+                        <div class="d-flex align-items-center">
+                            <a href="javascript:void(0)">
+                                <img src="/public/images/profile/user-12.jpg"
+                                     class="rounded-circle me-n2 card-hover border border-white" width="32" height="32">
+                            </a>
+                            <a href="javascript:void(0)">
+                                <img src="/public/images/profile/user-2.jpg"
+                                     class="rounded-circle me-n2 card-hover border border-white" width="32" height="32">
+                            </a>
+                            <a href="javascript:void(0)">
+                                <img src="/public/images/profile/user-3.jpg"
+                                     class="rounded-circle me-n2 card-hover border border-white" width="32" height="32">
+                            </a>
+                        </div>
+                        <p class="mb-0">3 mutual friends</p>
+                    </div>
+                    <button class="btn bg-primary-subtle text-primary mb-3 w-100">Add Friend</button>
+                    <button class="btn bg-secondary-subtle text-secondary w-100">Remove</button>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
 </div>
+

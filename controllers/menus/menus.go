@@ -36,3 +36,14 @@ func Update(ctx *fiber.Ctx) error {
 	}
 	return ctx.JSON(fiber.Map{"status": "success"})
 }
+
+func Delete(ctx *fiber.Ctx) error {
+	id, _ := ctx.ParamsInt("id", 0)
+	if id > 0 {
+		var m db.Menu
+		m.Id = int64(id)
+		db.MainDB.Table("menus").Where("id=?", id).Delete(&m)
+	}
+
+	return ctx.JSON(fiber.Map{"status": "success"})
+}

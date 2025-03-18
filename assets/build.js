@@ -8,6 +8,8 @@ require("esbuild").build({
     bundle: true,
     minify: true,
     loader: {
+        ".png": "file",
+        ".jpg": "file",
         ".woff": "file",
         ".woff2": "file",
         ".eot": "file",

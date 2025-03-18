@@ -28,16 +28,23 @@ func routes(app *fiber.App) {
 	root.Get("/main-page", pages.MainPage)
 
 	api := app.Group("/api", mwIsLogin)
+	api.Get("/main-page", pages.GetMainPage)
+	api.Put("/pages/:slug?", pages.Update)
 	api.Get("/users", users.List)
 	api.Get("/params", params.First)
 	api.Put("/params", params.Update)
+
 	api.Get("/menus", menus.List)
 	api.Post("/menus", menus.Create)
 	api.Put("/menus/:id", menus.Update)
-	api.Get("/main-page", pages.GetMainPage)
-	api.Put("/pages/:slug?", pages.Update)
+	api.Delete("/menus/:id", menus.Delete)
+
 	api.Post("/carousel", carousels.UpdateCarousel)
 	api.Put("/carousel/:id", carousels.UpdateCarousel)
+
 	api.Post("/cards", cards.UpdateCard)
+	api.Put("/cards/:id", cards.UpdateCard)
+	api.Delete("/cards/:id", cards.DeleteCard)
+	api.Get("/cards", cards.GetCard)
 
 }

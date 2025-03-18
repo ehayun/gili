@@ -19,7 +19,8 @@ $blue_bg: #011B6B !default;
 
 
 //@import "./bootstrap.rtl.css";
-@import "./modern.css";
+//@import "./modern.css";
+@import "./styles.css";
 @import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css");
 
 @import "./quill.snow.css";
@@ -50,7 +51,7 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
   font-size: 250%;
   font-weight: 500;
   display: inline-block;
-  color: #5A8BBBFF;
+  color: #caa76f;
 }
 
 .site-subtitle {
@@ -90,6 +91,10 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 
 .text-blue {
     color: #00f !important;
+}
+
+.form-control {
+  border: var(--bs-border-width) solid #2a559d;
 }
 
 .line-clamp-3 {
