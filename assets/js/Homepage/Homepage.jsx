@@ -6,8 +6,6 @@ const Homepage = () => {
 
     return (
         <div className="container mt-4">
-            <h1>Homepage</h1>
-
             {/* Tabs Navigation */}
             <ul className="nav nav-tabs" id="myTab" role="tablist">
                 <li className="nav-item" role="presentation">

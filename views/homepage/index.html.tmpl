@@ -1,3 +1,12 @@
+<style>
+    .card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+</style>
 <div class="container">
 
     <div class="col-lg-12">
@@ -7,17 +16,19 @@
                 <div id="carouselExampleCaptions" class="carousel slide carousel-dark" data-bs-ride="carousel">
                     <ol class="carousel-indicators">
                         {{range $idx, $val := .carousels}}
-                        <li data-bs-target="#carouselExampleCaptions" data-bs-slide-to="{{$idx}}" class="{{if eq $idx 0}}active{{end}}"></li>
+                        <li data-bs-target="#carouselExampleCaptions" data-bs-slide-to="{{$idx}}"
+                            class="{{if eq $idx 0}}active{{end}}"></li>
                         {{end}}
                     </ol>
                     <div class="carousel-inner">
                         {{range $idx, $val := .carousels}}
                         <div class="carousel-item  {{if eq $idx 0}}active{{end}}">
-                            <img src="{{.ImageUrl}}" class="d-block w-100" style="max-height: 400px; object-fit: cover;"  alt="modernize-img" />
+                            <img src="{{.ImageUrl}}" class="d-block w-100" style="max-height: 400px; object-fit: cover;"
+                                 alt="modernize-img"/>
                             <div class="carousel-caption d-none d-md-block">
                                 <h5>{{.Title}}</h5>
                                 <p>
-                                   {{.Content}}
+                                    {{.Content}}
                                 </p>
                             </div>
                         </div>
@@ -37,37 +48,24 @@
         <!-- end With captions -->
     </div>
 
-    <div class="row">
-        <div class="col-sm-6 col-lg-3">
-            <div class="card shadow">
-                <div class="card-body p-4">
-                    <img src="/public/images/profile/user-3.jpg" alt="modernize-img" class="img-fluid rounded-circle mb-4"
-                         width="80" height="80">
-                    <h4 class="card-title">Charles Nunez</h4>
-                    <div class="d-flex align-items-center gap-4 mb-4">
-                        <div class="d-flex align-items-center">
-                            <a href="javascript:void(0)">
-                                <img src="/public/images/profile/user-12.jpg"
-                                     class="rounded-circle me-n2 card-hover border border-white" width="32" height="32">
-                            </a>
-                            <a href="javascript:void(0)">
-                                <img src="/public/images/profile/user-2.jpg"
-                                     class="rounded-circle me-n2 card-hover border border-white" width="32" height="32">
-                            </a>
-                            <a href="javascript:void(0)">
-                                <img src="/public/images/profile/user-3.jpg"
-                                     class="rounded-circle me-n2 card-hover border border-white" width="32" height="32">
-                            </a>
-                        </div>
-                        <p class="mb-0">3 mutual friends</p>
-                    </div>
-                    <button class="btn bg-primary-subtle text-primary mb-3 w-100">Add Friend</button>
-                    <button class="btn bg-secondary-subtle text-secondary w-100">Remove</button>
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+        <!-- Card 1 -->
+        {{range .cards}}
+        <div class="col">
+            <div class="card h-100">
+                <div class="ratio ratio-16x9">
+                    <img src="{{.ImageUrl}}" class="card-img-top object-fit-cover rounded-top" alt="{{.Title}}">
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">{{.Title}}</h5>
+                    <p class="card-text">{{.Content | safe}}</p>
+                </div>
+                <div class="card-footer">
+                    <small class="text-muted"></small>
                 </div>
             </div>
         </div>
-
-
+        {{end}}
     </div>
 
 </div>

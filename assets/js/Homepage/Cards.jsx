@@ -26,7 +26,7 @@ const Cards = () => {
         try {
             const response = await fetch(`/api/cards?page=${page}&search=${searchTerm}`);
             if (!response.ok) {
-                throw new Error('Failed to fetch cards');
+                throw new Error('נכשל בהבאת הכרטיסים');
             }
             const data = await response.json();
             setCards(data.rows || []);
@@ -101,7 +101,7 @@ const Cards = () => {
         try {
             // Validate form data before submission
             if (!formData.title.trim()) {
-                setError("Title is required");
+                setError("כותרת היא שדה חובה");
                 return;
             }
 
@@ -135,7 +135,7 @@ const Cards = () => {
             });
 
             if (!response.ok) {
-                throw new Error(`Failed to ${editingCard ? 'update' : 'create'} card`);
+                throw new Error(`נכשל ב${editingCard ? 'עדכון' : 'יצירת'} הכרטיס`);
             }
 
             // Reset form and state
@@ -171,7 +171,7 @@ const Cards = () => {
 
     // Delete card
     const handleDelete = async (id) => {
-        if (!window.confirm('Are you sure you want to delete this card?')) return;
+        if (!window.confirm('האם אתה בטוח שברצונך למחוק כרטיס זה?')) return;
 
         try {
             const response = await fetch(`/api/cards/${id}`, {
@@ -179,7 +179,7 @@ const Cards = () => {
             });
 
             if (!response.ok) {
-                throw new Error('Failed to delete card');
+                throw new Error('נכשל במחיקת הכרטיס');
             }
 
             fetchCards(currentPage, search);
@@ -212,7 +212,7 @@ const Cards = () => {
             });
 
             if (!response.ok) {
-                throw new Error('Failed to update card order');
+                throw new Error('נכשל בעדכון סדר הכרטיסים');
             }
 
             fetchCards(currentPage, search);
@@ -241,7 +241,7 @@ const Cards = () => {
             {error && (
                 <div className="alert alert-danger alert-dismissible fade show" role="alert">
                     {error}
-                    <button type="button" className="btn-close" onClick={() => setError(null)} aria-label="Close"></button>
+                    <button type="button" className="btn-close" onClick={() => setError(null)} aria-label="סגור"></button>
                 </div>
             )}
 
@@ -249,12 +249,12 @@ const Cards = () => {
                 <div className="col-md-4">
                     <div className="card mb-4">
                         <div className="card-header bg-primary text-white">
-                            {editingCard ? 'Edit Card' : 'Add New Card'}
+                            {editingCard ? 'עריכת כרטיס' : 'הוספת כרטיס חדש'}
                         </div>
                         <div className="card-body">
                             <form ref={formRef} onSubmit={handleSubmit} encType="multipart/form-data">
                                 <div className="mb-3">
-                                    <label htmlFor="title" className="form-label">Title</label>
+                                    <label htmlFor="title" className="form-label">כותרת</label>
                                     <input
                                         type="text"
                                         className="form-control"
@@ -267,7 +267,7 @@ const Cards = () => {
                                 </div>
 
                                 <div className="mb-3">
-                                    <label htmlFor="content" className="form-label">Content</label>
+                                    <label htmlFor="content" className="form-label">תוכן</label>
                                     <HebrewEditor
                                         value={formData.content}
                                         onChange={handleEditorChange}
@@ -275,7 +275,7 @@ const Cards = () => {
                                 </div>
 
                                 <div className="mb-3">
-                                    <label htmlFor="image" className="form-label">Image</label>
+                                    <label htmlFor="image" className="form-label">תמונה</label>
                                     <input
                                         type="file"
                                         className="form-control"
@@ -287,7 +287,7 @@ const Cards = () => {
                                         <div className="mt-2">
                                             <img
                                                 src={formData.image_url}
-                                                alt="Preview"
+                                                alt="תצוגה מקדימה"
                                                 className="img-thumbnail"
                                                 style={{ maxHeight: '100px' }}
                                             />
@@ -296,7 +296,7 @@ const Cards = () => {
                                 </div>
 
                                 <div className="mb-3">
-                                    <label htmlFor="order_num" className="form-label">Order</label>
+                                    <label htmlFor="order_num" className="form-label">סדר</label>
                                     <input
                                         type="number"
                                         className="form-control"
@@ -310,11 +310,11 @@ const Cards = () => {
 
                                 <div className="d-flex gap-2">
                                     <button type="submit" className="btn btn-primary">
-                                        {editingCard ? 'Update' : 'Create'}
+                                        {editingCard ? 'עדכן' : 'צור'}
                                     </button>
                                     {editingCard && (
                                         <button type="button" className="btn btn-secondary" onClick={handleCancel}>
-                                            Cancel
+                                            ביטול
                                         </button>
                                     )}
                                 </div>
@@ -326,12 +326,12 @@ const Cards = () => {
                 <div className="col-md-8">
                     <div className="card">
                         <div className="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                            <h5 className="mb-0">Cards</h5>
+                            <h5 className="mb-0">כרטיסים</h5>
                             <div className="input-group w-50 rtl">
                                 <input
                                     type="text"
                                     className="form-control"
-                                    placeholder="Search..."
+                                    placeholder="חיפוש..."
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                 />
@@ -340,29 +340,27 @@ const Cards = () => {
                                     type="button"
                                     onClick={() => fetchCards(1, search)}
                                 >
-                                    Search
+                                    חיפוש
                                 </button>
                             </div>
                         </div>
                         <div className="card-body">
                             {cards.length === 0 ? (
-                                <p className="text-center my-4">No cards found. Create your first card!</p>
+                                <p className="text-center my-4">לא נמצאו כרטיסים. צור את הכרטיס הראשון שלך!</p>
                             ) : (
                                 <div className="table-responsive">
                                     <table className="table table-striped table-hover">
                                         <thead>
                                         <tr>
-                                            <th>ID</th>
-                                            <th>Title</th>
-                                            <th>Image</th>
-                                            <th>Order</th>
-                                            <th>Actions</th>
+                                            <th>כותרת</th>
+                                            <th>תמונה</th>
+                                            <th>סדר</th>
+                                            <th></th>
                                         </tr>
                                         </thead>
                                         <tbody>
                                         {cards.map((card) => (
                                             <tr key={card.id}>
-                                                <td>{card.id}</td>
                                                 <td>{card.title}</td>
                                                 <td>
                                                     {card.image_url && (
@@ -412,13 +410,13 @@ const Cards = () => {
                         </div>
                         {totalPages > 1 && (
                             <div className="card-footer">
-                                <nav aria-label="Cards pagination">
+                                <nav aria-label="ניווט בין דפי כרטיסים">
                                     <ul className="pagination justify-content-center mb-0">
                                         <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                                            <button className="page-link" onClick={() => setCurrentPage(1)}>First</button>
+                                            <button className="page-link" onClick={() => setCurrentPage(1)}>ראשון</button>
                                         </li>
                                         <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                                            <button className="page-link" onClick={() => setCurrentPage(currentPage - 1)}>Previous</button>
+                                            <button className="page-link" onClick={() => setCurrentPage(currentPage - 1)}>הקודם</button>
                                         </li>
                                         {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                                             <li key={page} className={`page-item ${currentPage === page ? 'active' : ''}`}>
@@ -426,10 +424,10 @@ const Cards = () => {
                                             </li>
                                         ))}
                                         <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                                            <button className="page-link" onClick={() => setCurrentPage(currentPage + 1)}>Next</button>
+                                            <button className="page-link" onClick={() => setCurrentPage(currentPage + 1)}>הבא</button>
                                         </li>
                                         <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                                            <button className="page-link" onClick={() => setCurrentPage(totalPages)}>Last</button>
+                                            <button className="page-link" onClick={() => setCurrentPage(totalPages)}>אחרון</button>
                                         </li>
                                     </ul>
                                 </nav>
@@ -442,7 +440,7 @@ const Cards = () => {
             {/* Display Cards Grid Preview */}
             <div className="row mt-5">
                 <div className="col-12">
-                    <h3 className="border-bottom pb-2 mb-4">Cards Preview</h3>
+                    <h3 className="border-bottom pb-2 mb-4">תצוגה מקדימה של הכרטיסים</h3>
                 </div>
                 {cards.map((card) => (
                     <div key={card.id} className="col-md-4 mb-4">
@@ -455,7 +453,7 @@ const Cards = () => {
                                 <div className="card-text" dangerouslySetInnerHTML={createMarkup(card.content)}></div>
                             </div>
                             <div className="card-footer bg-white">
-                                <small className="text-muted">Order: {card.order_num}</small>
+                                <small className="text-muted">סדר: {card.order_num}</small>
                             </div>
                         </div>
                     </div>
