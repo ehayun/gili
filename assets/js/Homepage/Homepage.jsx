@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import Cards from "./Cards";
+import {Carousel} from "react-bootstrap";
+import Carousels from "./Carousels";
 
 const Homepage = () => {
-    const [activeTab, setActiveTab] = useState('details');
+    const [activeTab, setActiveTab] = useState('cards');
 
     return (
         <div className="container mt-4">
             {/* Tabs Navigation */}
             <ul className="nav nav-tabs" id="myTab" role="tablist">
-                <li className="nav-item" role="presentation">
+                <li className="hidden nav-item" role="presentation">
                     <button
                         className={`nav-link ${activeTab === 'details' ? 'active' : ''}`}
                         onClick={() => setActiveTab('details')}
@@ -25,7 +27,7 @@ const Homepage = () => {
                         type="button"
                         role="tab"
                     >
-                        Cards
+                        כרטיסיות
                     </button>
                 </li>
                 <li className="nav-item" role="presentation">
@@ -35,7 +37,7 @@ const Homepage = () => {
                         type="button"
                         role="tab"
                     >
-                        Carousels
+                        קרוסלה
                     </button>
                 </li>
             </ul>
@@ -56,8 +58,7 @@ const Homepage = () => {
 
                 {/* Carousels Tab */}
                 <div className={`tab-pane fade ${activeTab === 'carousels' ? 'show active' : ''}`}>
-                    <h3>Carousels Content</h3>
-                    <p>Carousel items will be shown here.</p>
+                    <Carousels />
                 </div>
             </div>
         </div>

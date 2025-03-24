@@ -9,13 +9,19 @@ import (
 func UpdateCarousel(ctx *fiber.Ctx) error {
 	var c db.Carousel
 	_ = ctx.BodyParser(&c)
-	//db.DumpPrettyJson(c, "carousel")
 
+	on := ctx.FormValue("order_num")
+
+	c.OrderNum = db.StrToInt(on)
+
+	//db.DumpPrettyJson(c, "carousel")
 	filePath, err := db.SaveFile(ctx, "image", "carousel")
 	if err == nil {
 		fmt.Printf("saved ==> %v\n", filePath)
 	}
-	c.ImageUrl = filePath
+	if filePath > "" {
+		c.ImageUrl = "/" + filePath
+	}
 	if c.ID == 0 {
 		err = c.Create()
 	} else {
@@ -28,4 +34,9 @@ func UpdateCarousel(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.JSON(fiber.Map{"message": "Update"})
+}
+
+func List(ctx *fiber.Ctx) error {
+	var c db.Carousel
+	return ctx.JSON(c.List())
 }

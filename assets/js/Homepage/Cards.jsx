@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import HebrewEditor from '../components/HebrewEditor';
+import Select from 'react-select';
 
 const Cards = () => {
     // Use refs to track form elements
     const formRef = useRef(null);
     const [cards, setCards] = useState([]);
+    const [menus, setMenus] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
@@ -16,7 +18,8 @@ const Cards = () => {
         title: '',
         content: '',
         image_url: '',
-        order_num: 0
+        order_num: 0,
+        menu_id: null
     });
     const [selectedFile, setSelectedFile] = useState(null);
 
@@ -39,8 +42,27 @@ const Cards = () => {
         }
     };
 
+    // Fetch menus for the dropdown
+    const fetchMenus = async () => {
+        try {
+            const response = await fetch('/api/menus');
+            if (!response.ok) {
+                throw new Error('נכשל בהבאת התפריטים');
+            }
+            const data = await response.json();
+            const menuOptions = data.map(menu => ({
+                value: menu.id,
+                label: menu.title
+            }));
+            setMenus(menuOptions);
+        } catch (err) {
+            setError(err.message);
+        }
+    };
+
     useEffect(() => {
         fetchCards(currentPage, search);
+        fetchMenus();
     }, [currentPage, search]);
 
     // Add this effect to reset form when editingCard is null
@@ -63,7 +85,8 @@ const Cards = () => {
             title: '',
             content: '',
             image_url: '',
-            order_num: 0
+            order_num: 0,
+            menu_id: null
         });
         setSelectedFile(null);
     };
@@ -72,6 +95,11 @@ const Cards = () => {
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
+    };
+
+    // Handle menu selection
+    const handleMenuChange = (selectedOption) => {
+        setFormData({ ...formData, menu_id: selectedOption ? selectedOption.value : null });
     };
 
     // Handle rich text editor content changes
@@ -110,12 +138,19 @@ const Cards = () => {
 
             // Ensure order_num is a number
             const orderNum = Number(formData.order_num);
+            const menuId  = Number(formData.menu_id);
 
             // Add all form fields to FormData
             multipartFormData.append('id', Number(formData.id || 0));
             multipartFormData.append('title', formData.title.trim());
             multipartFormData.append('content', formData.content || '');
             multipartFormData.append('order_num', orderNum);
+            multipartFormData.append('menu_id', menuId);
+
+            // Add menu_id to FormData
+            if (formData.menu_id !== null) {
+                multipartFormData.append('menu_id', Number(formData.menu_id));
+            }
 
             // If there's a selected file, append it to FormData
             if (selectedFile) {
@@ -164,7 +199,8 @@ const Cards = () => {
                 title: card.title || '',
                 content: card.content || '',
                 image_url: card.image_url || '',
-                order_num: Number(card.order_num) || 0
+                order_num: Number(card.order_num) || 0,
+                menu_id: card.menu_id || null
             });
         }, 10);
     };
@@ -202,6 +238,9 @@ const Cards = () => {
             reorderFormData.append('title', card.title);
             reorderFormData.append('content', card.content);
             reorderFormData.append('order_num', Number(newOrderNum));
+            if (card.menu_id) {
+                reorderFormData.append('menu_id', Number(card.menu_id));
+            }
             if (card.image_url) {
                 reorderFormData.append('image_url', card.image_url);
             }
@@ -230,6 +269,12 @@ const Cards = () => {
     // Create HTML from content
     const createMarkup = (htmlContent) => {
         return { __html: htmlContent };
+    };
+
+    // Find menu name by ID for display in the table
+    const getMenuNameById = (menuId) => {
+        const menu = menus.find(m => m.value === menuId);
+        return menu ? menu.label : '';
     };
 
     if (loading && cards.length === 0) {
@@ -263,6 +308,21 @@ const Cards = () => {
                                         value={formData.title}
                                         onChange={handleInputChange}
                                         required
+                                    />
+                                </div>
+
+                                <div className="mb-3">
+                                    <label htmlFor="menu_id" className="form-label">תפריט</label>
+                                    <Select
+                                        id="menu_id"
+                                        name="menu_id"
+                                        value={menus.find(option => option.value === formData.menu_id) || null}
+                                        onChange={handleMenuChange}
+                                        options={menus}
+                                        isClearable
+                                        placeholder="בחר תפריט..."
+                                        className="basic-single"
+                                        classNamePrefix="select"
                                     />
                                 </div>
 
@@ -353,6 +413,7 @@ const Cards = () => {
                                         <thead>
                                         <tr>
                                             <th>כותרת</th>
+                                            <th>תפריט</th>
                                             <th>תמונה</th>
                                             <th>סדר</th>
                                             <th></th>
@@ -362,6 +423,7 @@ const Cards = () => {
                                         {cards.map((card) => (
                                             <tr key={card.id}>
                                                 <td>{card.title}</td>
+                                                <td>{getMenuNameById(card.menu_id)}</td>
                                                 <td>
                                                     {card.image_url && (
                                                         <img
@@ -387,18 +449,7 @@ const Cards = () => {
                                                         >
                                                             <i className="bi bi-trash"></i>
                                                         </button>
-                                                        <button
-                                                            className="btn btn-sm btn-outline-secondary"
-                                                            onClick={() => handleReorder(card.id, 'up')}
-                                                        >
-                                                            <i className="bi bi-arrow-up"></i>
-                                                        </button>
-                                                        <button
-                                                            className="btn btn-sm btn-outline-secondary"
-                                                            onClick={() => handleReorder(card.id, 'down')}
-                                                        >
-                                                            <i className="bi bi-arrow-down"></i>
-                                                        </button>
+
                                                     </div>
                                                 </td>
                                             </tr>
@@ -451,6 +502,11 @@ const Cards = () => {
                             <div className="card-body">
                                 <h5 className="card-title">{card.title}</h5>
                                 <div className="card-text" dangerouslySetInnerHTML={createMarkup(card.content)}></div>
+                                {card.menu_id && (
+                                    <div className="mt-2">
+                                        <span className="badge bg-primary">{getMenuNameById(card.menu_id)}</span>
+                                    </div>
+                                )}
                             </div>
                             <div className="card-footer bg-white">
                                 <small className="text-muted">סדר: {card.order_num}</small>

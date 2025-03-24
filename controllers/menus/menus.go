@@ -11,8 +11,7 @@ func Index(ctx *fiber.Ctx) error {
 
 func List(ctx *fiber.Ctx) error {
 	var m db.Menu
-	db.DumpPrettyJson(m.List())
-	return ctx.JSON(m.List())
+	return ctx.JSON(m.List(false))
 }
 
 func Create(ctx *fiber.Ctx) error {

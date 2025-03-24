@@ -5,6 +5,10 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+func Index(ctx *fiber.Ctx) error {
+	return ctx.Render("pages/index", nil)
+}
+
 func MainPage(ctx *fiber.Ctx) error {
 	return ctx.Render("pages/main_page", nil)
 }
@@ -45,4 +49,9 @@ func Update(ctx *fiber.Ctx) error {
 	err = p.Page.Update()
 
 	return ctx.JSON(fiber.Map{"message": "Update"})
+}
+
+func List(ctx *fiber.Ctx) error {
+	var p db.Page
+	return ctx.JSON(fiber.Map{"rows": p.List()})
 }

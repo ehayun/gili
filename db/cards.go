@@ -4,8 +4,10 @@ type Card struct {
 	Id       int64  `gorm:"primaryKey" json:"id"`
 	Title    string `json:"title"`
 	ImageUrl string `json:"image_url"`
+	MenuId   int64  `json:"menu_id"`
 	Content  string `json:"content"`
 	OrderNum int64  `json:"order_num"`
+	Menu     Menu   `gorm:"foreignKey:MenuId" json:"menu"`
 }
 
 func (_ *Card) TableName() string {
@@ -14,7 +16,10 @@ func (_ *Card) TableName() string {
 
 func (c *Card) List() []Card {
 	var result []Card
-	MainDB.Table(c.TableName()).Order("order_num").Find(&result)
+	MainDB.Table(c.TableName()).
+		Preload("Menu").
+		Order("order_num").Find(&result)
+
 	return result
 }
 

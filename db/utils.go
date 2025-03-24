@@ -11,6 +11,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 )
 
@@ -97,4 +98,30 @@ func SaveFile(c *fiber.Ctx, fieldName string, dirName string) (string, error) {
 		return "", err
 	}
 	return outName, nil
+}
+
+func StrToInt64(on string) int64 {
+
+	if on == "" {
+		return 0
+	}
+
+	i, err := strconv.Atoi(on)
+	if err != nil {
+		return 0
+	}
+
+	return int64(i)
+}
+
+func StrToInt(on string) int {
+	if on == "" {
+		return 0
+	}
+
+	i, err := strconv.Atoi(on)
+	if err != nil {
+		return 0
+	}
+	return i
 }

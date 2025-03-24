@@ -2,9 +2,10 @@
     .card {
         transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
+
     .card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
     }
 </style>
 <div class="container">
@@ -13,7 +14,7 @@
         <!-- start With captions -->
         <div class="card">
             <div class="card-body">
-                <div id="carouselExampleCaptions" class="carousel slide carousel-dark" data-bs-ride="carousel">
+                <div id="carouselExampleCaptions" class="carousel slide carousel-light" data-bs-ride="carousel">
                     <ol class="carousel-indicators">
                         {{range $idx, $val := .carousels}}
                         <li data-bs-target="#carouselExampleCaptions" data-bs-slide-to="{{$idx}}"
@@ -26,9 +27,9 @@
                             <img src="{{.ImageUrl}}" class="d-block w-100" style="max-height: 400px; object-fit: cover;"
                                  alt="modernize-img"/>
                             <div class="carousel-caption d-none d-md-block">
-                                <h5>{{.Title}}</h5>
+                                <h5 class="text-light">{{.Title}}</h5>
                                 <p>
-                                    {{.Content}}
+                                    {{.Content|safe}}
                                 </p>
                             </div>
                         </div>
@@ -51,20 +52,24 @@
     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
         <!-- Card 1 -->
         {{range .cards}}
-        <div class="col">
-            <div class="card h-100">
-                <div class="ratio ratio-16x9">
-                    <img src="{{.ImageUrl}}" class="card-img-top object-fit-cover rounded-top" alt="{{.Title}}">
-                </div>
-                <div class="card-body">
-                    <h5 class="card-title">{{.Title}}</h5>
-                    <p class="card-text">{{.Content | safe}}</p>
-                </div>
-                <div class="card-footer">
-                    <small class="text-muted"></small>
+        <a href="/{{.Menu.Url}}" class="text-decoration-none">
+            <div class="col">
+                <div class="card h-100">
+                    <div class="ratio ratio-16x9">
+                        <img src="{{.ImageUrl}}" class="card-img-top object-fit-cover rounded-top" alt="{{.Title}}">
+                    </div>
+                    <div class="card-body">
+                        <h4 class="card-title ">
+                        <span class="badge text-bg-primary p-2">{{.Title}}</span>
+                        </h4>
+                        <p class="card-text">{{.Content | safe}}</p>
+                    </div>
+                    <div class="card-footer">
+                        <small class="text-muted"></small>
+                    </div>
                 </div>
             </div>
-        </div>
+        </a>
         {{end}}
     </div>
 

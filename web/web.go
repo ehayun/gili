@@ -77,7 +77,7 @@ func Web() {
 		var p db.Param
 		param, _ := p.Get()
 		var mnu db.Menu
-		menus := mnu.List()
+		menus := mnu.List(false)
 		//mutex.Lock()
 		//defer mutex.Unlock()
 

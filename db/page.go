@@ -1,13 +1,17 @@
 package db
 
+import "time"
+
 type Page struct {
-	ID       int    `json:"id" gorm:"primaryKey"`
-	Slug     string `json:"slug" gorm:"unique"`
-	Title    string `json:"title"`
-	ImageUrl string `json:"image_url"`
-	Content  string `json:"content"`
-	MenuId   int64  `json:"menu_id"`
-	Menu     Menu   `json:"menu" gorm:"foreignKey:MenuId" validate:"-"`
+	ID        int    `json:"id" gorm:"primaryKey"`
+	Slug      string `json:"slug" gorm:"unique"`
+	Title     string `json:"title"`
+	ImageUrl  string `json:"image_url"`
+	Content   string `json:"content"`
+	MenuId    int64  `json:"menu_id"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	Menu      Menu `json:"menu" gorm:"foreignKey:MenuId" validate:"-"`
 }
 
 func (p *Page) TableName() string {
@@ -27,4 +31,10 @@ func (p *Page) Update() error {
 		return MainDB.Create(p).Error
 	}
 	return MainDB.Save(p).Error
+}
+
+func (p *Page) List() []Page {
+	var pages []Page
+	MainDB.Table(p.TableName()).Order("updated_at desc").Find(&pages)
+	return pages
 }

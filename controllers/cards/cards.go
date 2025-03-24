@@ -18,11 +18,14 @@ func UpdateCard(ctx *fiber.Ctx) error {
 	on, _ := strconv.Atoi(ctx.FormValue("order_num", "1"))
 	c.OrderNum = int64(on)
 
+	on, _ = strconv.Atoi(ctx.FormValue("menu_id", "0"))
+	c.MenuId = int64(on)
+
 	id, err := ctx.ParamsInt("id", 0)
 	if err == nil {
 		c.Id = int64(id)
 	}
-	//db.DumpPrettyJson(c)
+	db.DumpPrettyJson(c, "UpdateCard")
 
 	image, err := ctx.FormFile("image")
 	if err == nil {

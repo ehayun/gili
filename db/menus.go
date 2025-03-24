@@ -14,11 +14,15 @@ func (_ *Menu) TableName() string {
 	return "menus"
 }
 
-func (m *Menu) List() []Menu {
+func (m *Menu) List(getAll bool) []Menu {
 	var result []Menu
-	MainDB.Table(m.TableName()).
-		Order("order_num").
-		Find(&result)
+	q := MainDB.Table(m.TableName()).
+		Order("order_num")
+	if !getAll {
+		q = q.Where("id > ?", 0)
+	}
+
+	q.Find(&result)
 	return result
 }
 

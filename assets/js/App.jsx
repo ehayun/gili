@@ -7,6 +7,7 @@ import Users from "./users/users";
 import Params from "./params/Params";
 import Menus from "./menus/Menus";
 import Homepage from "./Homepage/Homepage";
+import Pages from "./pages/Pages";
 
 let p = document.getElementById("users-crud");
 
@@ -27,4 +28,10 @@ if (p) {
 p = document.getElementById("main-page");
 if (p) {
     ReactDOM.render(<Homepage/>, p)
+}
+
+
+p = document.getElementById("pages");
+if (p) {
+    ReactDOM.render(<Pages/>, p)
 }
