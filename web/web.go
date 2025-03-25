@@ -91,6 +91,7 @@ func Web() {
 
 		m["params"] = param
 		m["menus"] = menus
+		m["mode"] = config.Config.Mode
 		// Bind flash message variables to context
 		_ = ctx.Bind(m)
 
@@ -350,5 +351,6 @@ func safe(s string) template.HTML {
 	if s == "" {
 		return ""
 	}
+	s = strings.Replace(s, "\n", "<br>", -1)
 	return template.HTML(s)
 }

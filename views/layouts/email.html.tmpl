@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{{_ .Title}}</title>
+    <style>
+        .rtl {
+            direction: rtl;
+            text-align: right;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f9fc;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: auto;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .mt-1 {
+            margin-top: 1rem !important
+        }
+    </style>
+</head>
+
+<body dir="rtl" style="direction: rtl; text-align: right; background-color: #f7f9fc; padding: 50px;">
+<div class="container rtl  mt-1">
+    {{embed}}
+</div>
+</body>
+
+</html>

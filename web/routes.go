@@ -14,6 +14,7 @@ import (
 
 func routes(app *fiber.App) {
 	app.Get("/", homepage.Index)
+	app.Post("/message/send", homepage.Send)
 
 	app.Get("/login", auth.Login)
 	app.Post("/login", auth.PostLogin)

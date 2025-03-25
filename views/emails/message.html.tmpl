@@ -1,0 +1,9 @@
+<h1>{{_ "New message"}}</h1>
+
+<p>
+    {{_ "You got a new message from"}} {{.sender.FirstName}} {{.sender.LastName}} ({{.sender.Email}})
+    <br>
+    {{_ "Subject"}}: {{.sender.Subject}}
+<div>{{.sender.Message|safe}}</div>
+</p>
+

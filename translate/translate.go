@@ -24,15 +24,15 @@ func init() {
 }
 
 func Trans(v string) string {
+
 	transStr, err := localize.LocalizeMessage(&i18n.Message{ID: v})
+	//fmt.Printf("%v [%v] ==> %v\n", v, transStr, err)
 	if err != nil && transStr > "" {
 		return v
 	}
 	if err == nil && transStr == "" {
 		return v
 	}
-	if err != nil {
-		return v
-	}
 	return transStr
+
 }
