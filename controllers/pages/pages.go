@@ -1,8 +1,11 @@
 package pages
 
 import (
+	"fmt"
 	"gishur/db"
 	"github.com/gofiber/fiber/v2"
+	"strconv"
+	"time"
 )
 
 func Index(ctx *fiber.Ctx) error {
@@ -33,20 +36,37 @@ func Update(ctx *fiber.Ctx) error {
 	var m db.Menu
 	db.MainDB.Table(m.TableName()).Where("url = ''").First(&m)
 	var p db.MainPage
-	err := ctx.BodyParser(&p.Page)
-	if err != nil {
-		return ctx.JSON(fiber.Map{"error": err.Error()})
-	}
+
+	id := ctx.FormValue("id")
+	slug := ctx.FormValue("slug")
+	title := ctx.FormValue("title")
+	image_url := ctx.FormValue("image_url")
+	content := ctx.FormValue("content")
+	menu_id := ctx.FormValue("menu_id")
+
+	p.Page.ID, _ = strconv.Atoi(id)
+	p.Page.Slug = slug
+	p.Page.Title = title
+	p.Page.ImageUrl = image_url
+	p.Page.Content = content
+	mnuId, _ := strconv.Atoi(menu_id)
+	p.Page.MenuId = int64(mnuId)
+
 	db.DumpPrettyJson(p, "mainpage")
 
 	var oldPage db.Page
-	db.MainDB.Where("slug = ?", "main").First(&oldPage)
+	db.MainDB.Where("id = ?", p.Page.ID).First(&oldPage)
 
-	p.Page.ID = oldPage.ID
-	p.Page.Slug = "main"
-	p.Page.MenuId = m.Id
-
-	err = p.Page.Update()
+	p.Page.UpdatedAt = time.Now()
+	if oldPage.ID == 0 {
+		p.Page.CreatedAt = time.Now()
+	} else {
+		p.Page.CreatedAt = oldPage.CreatedAt
+	}
+	if p.Page.Slug == "" {
+		p.Page.Slug = fmt.Sprintf("%v", time.Now().Unix())
+	}
+	_ = p.Page.Update()
 
 	return ctx.JSON(fiber.Map{"message": "Update"})
 }
