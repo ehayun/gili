@@ -34,17 +34,20 @@
                     </button>
                     <ul class="dropdown-menu">
                         <li>
-                            <button class="dropdown-item" type="button"><a href="/admin/params">{{_ "Params"}}</a></button>
+                            <button class="dropdown-item" type="button"><a href="/admin/params">{{_ "Params"}}</a>
+                            </button>
                         </li>
                         <li>
-                            <button class="dropdown-item" type="button"><a href="/admin/menus">{{_ "Menus"}}</a></button>
+                            <button class="dropdown-item" type="button"><a href="/admin/menus">{{_ "Menus"}}</a>
+                            </button>
                         </li>
                         <li>
                             <button class="dropdown-item" type="button"><a href="/admin/main-page">{{_ "Main Page"}}</a>
                             </button>
                         </li>
                         <li>
-                            <button class="dropdown-item" type="button"><a href="/admin/pages">{{_ "Pages"}}</a></button>
+                            <button class="dropdown-item" type="button"><a href="/admin/pages">{{_ "Pages"}}</a>
+                            </button>
                         </li>
                     </ul>
                 </div>
@@ -64,8 +67,6 @@
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
-        {{if eq .mod "production"}}
-        {[else}}
         <div class="collapse navbar-collapse" id="navbarNav">
 
             <ul class="navbar-nav">
@@ -74,7 +75,6 @@
                 {{end}}
             </ul>
         </div>
-        {{end}}
     </div>
 </nav>
 

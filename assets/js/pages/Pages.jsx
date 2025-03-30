@@ -92,6 +92,7 @@ const Pages = () => {
 
     // Submit form (create or update)
     const handleSubmit = async (e) => {
+        console.log("handleSubmit");
         e.preventDefault();
 
         // Create FormData object for file upload
@@ -245,22 +246,6 @@ const Pages = () => {
                                     onChange={handleInputChange}
                                     required
                                 />
-                            </div>
-
-                            <div className="hidden mb-3">
-                                <label htmlFor="slug" className="form-label">מזהה URL</label>
-                                <input
-                                    type="text"
-                                    className="form-control"
-                                    id="slug"
-                                    name="slug"
-                                    value={currentPage.slug}
-                                    onChange={handleInputChange}
-                                    required
-                                />
-                                <small className="form-text text-muted">
-                                    המזהה צריך להיות ייחודי וידידותי לכתובת URL (לדוגמה: "אודות").
-                                </small>
                             </div>
 
                             <div className="mb-3">
