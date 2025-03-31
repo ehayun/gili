@@ -1,412 +1,463 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import axios from 'axios';
 import HebrewEditor from '../components/HebrewEditor';
-import Pagination from '../components/Pagination';
 
 const Pages = () => {
-    // State management
-    const [pages, setPages] = useState([]);
-    const [currentPage, setCurrentPage] = useState({
-        id: 0,
-        slug: '',
-        title: '',
-        image_url: '',
-        content: '',
-        menu_id: 0
+  const [pages, setPages] = useState([]);
+  const [filteredPages, setFilteredPages] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState({
+    id: 0,
+    slug: '',
+    title: '',
+    imageURL: '',
+    content: '',
+    keywords: '',
+    menuID: null,
+    parentID: null
+  });
+  const [menus, setMenus] = useState([]);
+  const [parentPages, setParentPages] = useState([]);
+  const [modalMode, setModalMode] = useState('add'); // 'add' or 'edit'
+  const [imagePreview, setImagePreview] = useState('');
+  const fileInputRef = useRef(null);
+
+  // Fetch pages, menus, and parent pages on component mount
+  useEffect(() => {
+    fetchPages();
+    fetchMenus();
+  }, []);
+
+  const fetchPages = async () => {
+    try {
+      const response = await axios.get('/api/pages');
+      // Extract data from the rows field
+      const pagesData = response.data.rows || [];
+      setPages(pagesData);
+      setFilteredPages(pagesData);
+      setParentPages(pagesData);
+    } catch (error) {
+      console.error('Error fetching pages:', error);
+      alert('Failed to fetch pages. Please try again.');
+    }
+  };
+
+  const fetchMenus = async () => {
+    try {
+      const response = await axios.get('/api/menus');
+      // Extract data from the rows field
+      const menusData = response.data || [];
+      setMenus(menusData);
+    } catch (error) {
+      console.error('Error fetching menus:', error);
+    }
+  };
+
+  const handleSearch = (e) => {
+    const term = e.target.value;
+    setSearchTerm(term);
+
+    if (term.trim() === '') {
+      setFilteredPages(pages);
+    } else {
+      const filtered = pages.filter(
+          page =>
+              page.title.toLowerCase().includes(term.toLowerCase()) ||
+              page.slug.toLowerCase().includes(term.toLowerCase())
+      );
+      setFilteredPages(filtered);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setCurrentPage({ ...currentPage, [name]: value });
+  };
+
+  const handleContentChange = (content) => {
+    setCurrentPage({ ...currentPage, content });
+  };
+
+  const handleSelectChange = (e) => {
+    const { name, value } = e.target;
+    const numValue = value === '' ? null : parseInt(value, 10);
+    setCurrentPage({ ...currentPage, [name]: numValue });
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Preview the selected image
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+
+  const resetForm = () => {
+    setCurrentPage({
+      id: 0,
+      slug: '',
+      title: '',
+      imageURL: '',
+      content: '',
+      keywords: '',
+      menuID: null,
+      parentID: null
     });
-    const [menus, setMenus] = useState([]);
-    const [isEditing, setIsEditing] = useState(false);
-    const [isCreating, setIsCreating] = useState(false);
-    const [paging, setPaging] = useState({
-        page: 1,
-        limit: 10,
-        total_rows: 0,
-        total_pages: 0,
-        next_page: 1,
-        prev_page: 1,
-        pages: []
+    setImagePreview('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    setModalMode('add');
+  };
+
+  const openAddModal = () => {
+    resetForm();
+    // Using data-bs-toggle attribute for modal control
+  };
+
+  const openEditModal = (page) => {
+    setCurrentPage({
+      id: page.id,
+      slug: page.slug,
+      title: page.title,
+      imageURL: page.image_url,
+      content: page.content,
+      keywords: page.keywords,
+      menuID: page.menu_id,
+      parentID: page.parent_id
     });
-    const [searchTerm, setSearchTerm] = useState('');
-    const [imageFile, setImageFile] = useState(null);
-    const [showPreview, setShowPreview] = useState(false);
+    setImagePreview(page.image_url);
+    setModalMode('edit');
+  };
 
-    // Fetch pages on component mount
-    useEffect(() => {
-        fetchPages(1);
-        fetchMenus();
-    }, []);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-    // Fetch pages from API
-    const fetchPages = async (page = 1) => {
-        try {
-            const response = await fetch(`/api/pages?page=${page}&limit=${paging.limit}&search=${searchTerm}`);
-            const data = await response.json();
-            setPages(data.rows);
-            setPaging({
-                ...data,
-                rows: undefined
-            });
-        } catch (error) {
-            console.error('שגיאה בטעינת דפים:', error);
-        }
-    };
+    try {
+      // Create initial pageData without the image URL
+      const pageData = {
+        id: currentPage.id,
+        slug: currentPage.slug,
+        title: currentPage.title,
+        image_url: currentPage.imageURL, // Use existing imageURL initially
+        content: currentPage.content,
+        keywords: currentPage.keywords,
+        menu_id: currentPage.menuID,
+        parent_id: currentPage.parentID
+      };
 
-    // Fetch menus for dropdown
-    const fetchMenus = async () => {
-        try {
-            const response = await fetch('/api/menus');
-            const data = await response.json();
-            data.unshift({ id: 0, title: 'ללא תפריט' });
-            setMenus(data);
-        } catch (error) {
-            console.error('שגיאה בטעינת תפריטים:', error);
-        }
-    };
+      let response;
+      let createdPage;
 
-    // Handle form input changes
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setCurrentPage(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
+      // First save the page to get an ID (for new pages)
+      if (modalMode === 'add') {
+        response = await axios.post('/api/pages', pageData);
+        createdPage = response.data;
+      } else {
+        response = await axios.put(`/api/pages/${currentPage.id}`, pageData);
+        createdPage = response.data;
+      }
 
-    // Handle rich text editor content changes
-    const handleContentChange = (content) => {
-        setCurrentPage(prev => ({
-            ...prev,
-            content
-        }));
-    };
-
-    // Handle image file selection
-    const handleImageChange = (e) => {
-        setImageFile(e.target.files[0]);
-    };
-
-    // Start creating a new page
-    const handleNewPage = () => {
-        resetForm();
-        setIsCreating(true);
-    };
-
-    // Submit form (create or update)
-    const handleSubmit = async (e) => {
-        console.log("handleSubmit");
-        e.preventDefault();
-
-        // Create FormData object for file upload
+      // Now that we have a page ID, upload the image if one was selected
+      if (fileInputRef.current && fileInputRef.current.files[0]) {
         const formData = new FormData();
-
-        // Add all page fields
-        Object.keys(currentPage).forEach(key => {
-            formData.append(key, currentPage[key]);
-        });
-
-        // Add image file if selected
-        if (imageFile) {
-            formData.append('image', imageFile);
-        }
+        formData.append('image', fileInputRef.current.files[0]);
+        formData.append('pageId', createdPage.id); // Pass the page ID to the upload endpoint
 
         try {
-            const url = isEditing
-                ? `/api/pages/${currentPage.id}`
-                : '/api/pages';
-
-            const method = isEditing ? 'PUT' : 'POST';
-
-            const response = await fetch(url, {
-                method,
-                body: formData,
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                resetForm();
-                fetchPages(paging.page);
-            } else {
-                alert(result.message || 'אירעה שגיאה');
+          const uploadResponse = await axios.post('/api/pages/upload', formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data'
             }
-        } catch (error) {
-            console.error('שגיאה בשמירת דף:', error);
+          });
+
+          // Update the page with the new image URL if upload was successful
+          if (uploadResponse.data && uploadResponse.data.imageUrl) {
+            const updateImageData = {
+              ...pageData,
+              id: createdPage.id,
+              image_url: uploadResponse.data.imageUrl
+            };
+
+            await axios.put(`/api/pages/${createdPage.id}`, updateImageData);
+            console.log('Page image updated:', uploadResponse.data.imageUrl);
+          }
+        } catch (uploadError) {
+          console.error('Error uploading image:', uploadError);
+          alert('Page saved but image upload failed. Please try editing the page to upload the image again.');
         }
-    };
+      }
 
-    // Reset form to initial state
-    const resetForm = () => {
-        setCurrentPage({
-            id: 0,
-            slug: '',
-            title: '',
-            image_url: '',
-            content: '',
-            menu_id: 0
-        });
-        setImageFile(null);
-        setIsEditing(false);
-        setIsCreating(false);
-        setShowPreview(false);
-    };
+      // Refresh the page list
+      fetchPages();
+      resetForm();
+    } catch (error) {
+      console.error('Error saving page:', error);
+      alert('Failed to save page. Please try again.');
+    }
+  };
 
-    // Edit a page
-    const handleEdit = (page) => {
-        setCurrentPage(page);
-        setIsEditing(true);
-        setIsCreating(false);
-        window.scrollTo(0, 0);
-    };
+  const handleDelete = async (pageId) => {
+    if (window.confirm('Are you sure you want to delete this page?')) {
+      try {
+        await axios.delete(`/api/pages/${pageId}`);
+        fetchPages();
+      } catch (error) {
+        console.error('Error deleting page:', error);
+        alert('Failed to delete page. Please try again.');
+      }
+    }
+  };
 
-    // Delete a page
-    const handleDelete = async (id) => {
-        if (!confirm('האם אתה בטוח שברצונך למחוק דף זה?')) {
-            return;
-        }
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+  };
 
-        try {
-            const response = await fetch(`/api/pages/${id}`, {
-                method: 'DELETE',
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                fetchPages(paging.page);
-            } else {
-                alert(result.message || 'אירעה שגיאה');
-            }
-        } catch (error) {
-            console.error('שגיאה במחיקת דף:', error);
-        }
-    };
-
-    // Handle search
-    const handleSearch = (e) => {
-        setSearchTerm(e.target.value);
-    };
-
-    // Submit search form
-    const submitSearch = (e) => {
-        e.preventDefault();
-        fetchPages(1);
-    };
-
-    // Set page class for pagination
-    const setPageClass = (p, current) => {
-        return p === current ? "page-item active" : "page-item";
-    };
-
-    return (
-        <div className="container-fluid mt-4" dir="rtl">
-            <h2 className="mb-4">ניהול דפים</h2>
-
-            {/* Search Form */}
-            <div className="card mb-4">
-                <div className="card-body">
-                    <form onSubmit={submitSearch} className="row">
-                        <div className="col-md-8">
-                            <input
-                                type="text"
-                                className="form-control"
-                                placeholder="חפש לפי כותרת או מזהה..."
-                                value={searchTerm}
-                                onChange={handleSearch}
-                            />
-                        </div>
-                        <div className="col-md-4">
-                            <button type="submit" className="btn btn-primary">חיפוש</button>
-                            <button type="button" className="btn btn-secondary me-2" onClick={() => {
-                                setSearchTerm('');
-                                fetchPages(1);
-                            }}>איפוס</button>
-                            <button type="button" className="btn btn-success" onClick={handleNewPage}>
-                                דף חדש
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            {/* Form - only visible when editing or creating */}
-            {(isEditing || isCreating) && (
-                <div className="card mb-4">
-                    <div className="card-header">
-                        <h4>{isEditing ? 'עריכת דף' : 'הוספת דף חדש'}</h4>
-                    </div>
-                    <div className="card-body">
-                        <form onSubmit={handleSubmit}>
-                            <div className="mb-3">
-                                <label htmlFor="title" className="form-label">כותרת</label>
-                                <input
-                                    type="text"
-                                    className="form-control"
-                                    id="title"
-                                    name="title"
-                                    value={currentPage.title}
-                                    onChange={handleInputChange}
-                                    required
-                                />
-                            </div>
-
-                            <div className="mb-3">
-                                <label htmlFor="menu_id" className="form-label">תפריט</label>
-                                <select
-                                    className="form-select"
-                                    id="menu_id"
-                                    name="menu_id"
-                                    value={currentPage.menu_id}
-                                    onChange={handleInputChange}
-                                    required
-                                >
-                                    <option value="">בחר תפריט</option>
-                                    {menus.map(menu => (
-                                        <option key={menu.id} value={menu.id}>{menu.title}</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div className="mb-3">
-                                <label htmlFor="image" className="form-label">תמונה</label>
-                                <input
-                                    type="file"
-                                    className="form-control"
-                                    id="image"
-                                    onChange={handleImageChange}
-                                />
-                                {(currentPage.image_url || imageFile) && (
-                                    <div className="mt-2">
-                                        {currentPage.image_url && !imageFile && (
-                                            <div>
-                                                <button
-                                                    type="button"
-                                                    className="btn btn-sm btn-info mb-2"
-                                                    onClick={() => setShowPreview(!showPreview)}
-                                                >
-                                                    {showPreview ? 'הסתר' : 'הצג'} תמונה נוכחית
-                                                </button>
-                                                {showPreview && (
-                                                    <div>
-                                                        <img
-                                                            src={currentPage.image_url}
-                                                            alt="נוכחי"
-                                                            className="img-thumbnail"
-                                                            style={{ maxWidth: '200px' }}
-                                                        />
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-                                        {imageFile && (
-                                            <small className="text-muted">
-                                                תמונה חדשה נבחרה: {imageFile.name}
-                                            </small>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="mb-3">
-                                <label htmlFor="content" className="form-label">תוכן</label>
-                                <HebrewEditor
-                                    value={currentPage.content}
-                                    onChange={handleContentChange}
-                                />
-                            </div>
-
-                            <div className="d-flex justify-content-between">
-                                <button type="submit" className="btn btn-primary">
-                                    {isEditing ? 'עדכון' : 'שמירה'}
-                                </button>
-                                <button
-                                    type="button"
-                                    className="btn btn-secondary"
-                                    onClick={resetForm}
-                                >
-                                    ביטול
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
-
-            {/* Pages List */}
-            <div className="card">
-                <div className="card-header d-flex justify-content-between align-items-center">
-                    <h4>רשימת דפים</h4>
-                    {!isEditing && !isCreating && (
-                        <button
-                            className="btn btn-success"
-                            onClick={handleNewPage}
-                        >
-                            דף חדש
-                        </button>
-                    )}
-                </div>
-                <div className="card-body">
-                    <div className="table-responsive">
-                        <table className="table table-striped">
-                            <thead>
-                            <tr>
-                                <th>מזהה</th>
-                                <th>כותרת</th>
-                                <th>מזהה URL</th>
-                                <th>תפריט</th>
-                                <th>פעולות</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {pages.length > 0 ? (
-                                pages.map(page => (
-                                    <tr key={page.id}>
-                                        <td>{page.id}</td>
-                                        <td>{page.title}</td>
-                                        <td>{page.slug}</td>
-                                        <td>
-                                            {menus.find(m => m.id === page.menu_id)?.title || 'לא זמין'}
-                                        </td>
-                                        <td>
-                                            <button
-                                                className="btn btn-sm btn-info ms-2"
-                                                onClick={() => handleEdit(page)}
-                                            >
-                                                עריכה
-                                            </button>
-                                            <button
-                                                className="btn btn-sm btn-danger"
-                                                onClick={() => handleDelete(page.id)}
-                                            >
-                                                מחיקה
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan="5" className="text-center">
-                                        לא נמצאו דפים
-                                    </td>
-                                </tr>
-                            )}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    {/* Pagination */}
-                    {pages.length > 0 && (
-                        <div className="d-flex justify-content-center mt-4">
-                            <Pagination
-                                pages={paging.pages || []}
-                                Paging={paging}
-                                Filter={fetchPages}
-                                setPageClass={setPageClass}
-                            />
-                        </div>
-                    )}
-                </div>
-            </div>
+  return (
+      <div className="container-fluid mt-4">
+        <div className="row mb-4">
+          <div className="col">
+            <h2>Pages Management</h2>
+          </div>
         </div>
-    );
+
+        <div className="row mb-4">
+          <div className="col-md-6">
+            <div className="input-group">
+            <span className="input-group-text">
+              <i className="bi bi-search"></i>
+            </span>
+              <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Search pages by title or slug..."
+                  value={searchTerm}
+                  onChange={handleSearch}
+              />
+            </div>
+          </div>
+          <div className="col-md-6 text-end">
+            <button
+                className="btn btn-primary"
+                onClick={openAddModal}
+                data-bs-toggle="modal"
+                data-bs-target="#pageModal"
+            >
+              <i className="bi bi-plus-circle me-1"></i> Add New Page
+            </button>
+          </div>
+        </div>
+
+        <div className="row">
+          <div className="col">
+            <div className="table-responsive">
+              <table className="table table-striped table-hover">
+                <thead className="table-light">
+                <tr>
+                  <th>ID</th>
+                  <th>Title</th>
+                  <th>Slug</th>
+                  <th>Menu</th>
+                  <th>Parent</th>
+                  <th>Updated At</th>
+                  <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                {filteredPages.length > 0 ? (
+                    filteredPages.map(page => (
+                        <tr key={page.id}>
+                          <td>{page.id}</td>
+                          <td>{page.title}</td>
+                          <td>{page.slug}</td>
+                          <td>{page.menu ? page.menu.name : '-'}</td>
+                          <td>{page.parent ? page.parent.title : '-'}</td>
+                          <td>{formatDate(page.updated_at)}</td>
+                          <td>
+                            <div className="btn-group">
+                              <button
+                                  className="btn btn-sm btn-outline-primary"
+                                  onClick={() => openEditModal(page)}
+                                  data-bs-toggle="modal"
+                                  data-bs-target="#pageModal"
+                              >
+                                <i className="bi bi-pencil"></i> Edit
+                              </button>
+                              <button
+                                  className="btn btn-sm btn-outline-danger"
+                                  onClick={() => handleDelete(page.id)}
+                              >
+                                <i className="bi bi-trash"></i> Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                    ))
+                ) : (
+                    <tr>
+                      <td colSpan="7" className="text-center">
+                        {searchTerm ? 'No pages found matching your search' : 'No pages available'}
+                      </td>
+                    </tr>
+                )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        {/* Page Modal - Add/Edit */}
+        <div className="modal fade" id="pageModal" tabIndex="-1" aria-labelledby="pageModalLabel" aria-hidden="true">
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="pageModalLabel">
+                  {modalMode === 'add' ? 'Add New Page' : 'Edit Page'}
+                </h5>
+                <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <form onSubmit={handleSubmit}>
+                <div className="modal-body">
+                  <div className="mb-3">
+                    <label htmlFor="title" className="form-label">Title</label>
+                    <input
+                        type="text"
+                        className="form-control"
+                        id="title"
+                        name="title"
+                        value={currentPage.title}
+                        onChange={handleInputChange}
+                        required
+                    />
+                  </div>
+
+                  <div className="mb-3">
+                    <label htmlFor="slug" className="form-label">Slug</label>
+                    <input
+                        type="text"
+                        className="form-control"
+                        id="slug"
+                        name="slug"
+                        value={currentPage.slug}
+                        onChange={handleInputChange}
+                        required
+                    />
+                    <div className="form-text">URL-friendly name (e.g., "about-us")</div>
+                  </div>
+
+                  <div className="mb-3">
+                    <label htmlFor="image" className="form-label">Image</label>
+                    <div className="input-group">
+                      <input
+                          type="file"
+                          className="form-control"
+                          id="image"
+                          name="image"
+                          accept="image/*"
+                          onChange={handleImageChange}
+                          ref={fileInputRef}
+                      />
+                      <label className="input-group-text" htmlFor="image">
+                        <i className="bi bi-upload"></i>
+                      </label>
+                    </div>
+
+                    {/* Image URL field (hidden but maintained for compatibility) */}
+                    <input
+                        type="hidden"
+                        id="imageURL"
+                        name="imageURL"
+                        value={currentPage.imageURL}
+                        onChange={handleInputChange}
+                    />
+
+                    {/* Image preview */}
+                    {imagePreview && (
+                        <div className="mt-2">
+                          <img
+                              src={imagePreview}
+                              alt="Preview"
+                              className="img-thumbnail"
+                              style={{ maxHeight: '200px' }}
+                          />
+                        </div>
+                    )}
+                  </div>
+
+                  <div className="mb-3">
+                    <label htmlFor="content" className="form-label">Content</label>
+                    <HebrewEditor
+                        value={currentPage.content}
+                        onChange={handleContentChange}
+                    />
+                  </div>
+
+                  <div className="mb-3">
+                    <label htmlFor="keywords" className="form-label">Keywords</label>
+                    <input
+                        type="text"
+                        className="form-control"
+                        id="keywords"
+                        name="keywords"
+                        value={currentPage.keywords}
+                        onChange={handleInputChange}
+                    />
+                    <div className="form-text">Comma-separated list of keywords for SEO</div>
+                  </div>
+
+                  <div className="row">
+                    <div className="col-md-6 mb-3">
+                      <label htmlFor="menuID" className="form-label">Menu</label>
+                      <select
+                          className="form-select"
+                          id="menuID"
+                          name="menuID"
+                          value={currentPage.menuID || ''}
+                          onChange={handleSelectChange}
+                      >
+                        <option value="">None</option>
+                        {menus.map(menu => (
+                            <option key={menu.id} value={menu.id}>{menu.title}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="col-md-6 mb-3">
+                      <label htmlFor="parentID" className="form-label">Parent Page</label>
+                      <select
+                          className="form-select"
+                          id="parentID"
+                          name="parentID"
+                          value={currentPage.parentID || ''}
+                          onChange={handleSelectChange}
+                      >
+                        <option value="">None</option>
+                        {parentPages.filter(p => p.id !== currentPage.id).map(page => (
+                            <option key={page.id} value={page.id}>{page.title}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="modal-footer">
+                  <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                  <button type="submit" className="btn btn-primary">
+                    {modalMode === 'add' ? 'Add Page' : 'Save Changes'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+  );
 };
 
 export default Pages;

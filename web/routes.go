@@ -31,7 +31,6 @@ func routes(app *fiber.App) {
 
 	api := app.Group("/api", mwIsLogin)
 	api.Get("/main-page", pages.GetMainPage)
-	api.Put("/pages/:slug?", pages.Update)
 	api.Get("/users", users.List)
 	api.Get("/params", params.First)
 	api.Put("/params", params.Update)
@@ -51,5 +50,8 @@ func routes(app *fiber.App) {
 	api.Get("/cards", cards.GetCard)
 
 	api.Get("/pages", pages.List)
+	api.Post("/pages", pages.Create)
+	api.Post("/pages/upload", pages.Upload)
+	api.Put("/pages/:slug?", pages.Update)
 
 }
