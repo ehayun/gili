@@ -15,9 +15,16 @@ func MainPage(ctx *fiber.Ctx) error {
 }
 
 func Page(ctx *fiber.Ctx) error {
-	page := ctx.Params("page")
+	pageId := ctx.Params("page")
+	var menu db.Menu
+	if err := db.MainDB.Where("url = ?", pageId).First(&menu).Error; err != nil {
+		return ctx.Render("pages/page", fiber.Map{"nopage": pageId})
+	}
 
-	return ctx.Render("pages/page", fiber.Map{"page": page})
+	var p db.Page
+	db.MainDB.Where("menu_id = ?", menu.Id).First(&p)
+	return ctx.Render("pages/page", fiber.Map{"page": p})
+
 }
 
 func GetMainPage(ctx *fiber.Ctx) error {

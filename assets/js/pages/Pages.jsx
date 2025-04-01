@@ -195,7 +195,9 @@ const Pages = () => {
 
       // Refresh the page list
       fetchPages();
-      resetForm();
+      // resetForm();
+      const cancel  = document.getElementById("m-cancel");
+      cancel.click()
     } catch (error) {
       console.error('Error saving page:', error);
       alert('Failed to save page. Please try again.');
@@ -447,7 +449,7 @@ const Pages = () => {
                 </div>
 
                 <div className="modal-footer">
-                  <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                  <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" id={"m-cancel"}>Cancel</button>
                   <button type="submit" className="btn btn-primary">
                     {modalMode === 'add' ? 'Add Page' : 'Save Changes'}
                   </button>
