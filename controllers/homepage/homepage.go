@@ -1,7 +1,6 @@
 package homepage
 
 import (
-	"gishur/config"
 	"gishur/controllers/emails"
 	"gishur/db"
 	"github.com/gofiber/fiber/v2"
@@ -14,11 +13,8 @@ func Index(c *fiber.Ctx) error {
 	var cards db.Card
 	p, _ = p.GetMainPage()
 
-	if config.Config.Mode == "production" {
-		return c.Render("homepage/temp", fiber.Map{"message": ""})
-	}
-
-	return c.Render("homepage/index", fiber.Map{"page": p.Page, "carousels": cs.List(), "cards": cards.List()})
+	carousels := cs.List()
+	return c.Render("homepage/index", fiber.Map{"page": p.Page, "carousels": carousels, "hasCarousels": len(carousels) > 0, "cards": cards.List()})
 }
 
 func Send(ctx *fiber.Ctx) error {

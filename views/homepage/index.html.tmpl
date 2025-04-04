@@ -10,8 +10,8 @@
 </style>
 <div class="container">
 
+    {{if .hasCarousels}}
     <div class="col-lg-12">
-        <!-- start With captions -->
         <div class="card">
             <div class="card-body">
                 <div id="carouselExampleCaptions" class="carousel slide carousel-light" data-bs-ride="carousel">
@@ -46,8 +46,8 @@
                 </div>
             </div>
         </div>
-        <!-- end With captions -->
     </div>
+    {{end}}
 
     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
         <!-- Card 1 -->

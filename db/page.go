@@ -43,3 +43,8 @@ func (p *Page) Create() error {
 	res := MainDB.Create(p)
 	return res.Error
 }
+
+func (p *Page) Get(id int64) error {
+	res := MainDB.Where("id = ?", id).First(p)
+	return res.Error
+}

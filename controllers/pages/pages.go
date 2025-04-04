@@ -4,6 +4,12 @@ import (
 	"fmt"
 	"gishur/db"
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
+	"os"
+	"path"
+	"path/filepath"
+	"strconv"
+	"time"
 )
 
 func Index(ctx *fiber.Ctx) error {
@@ -23,7 +29,9 @@ func Page(ctx *fiber.Ctx) error {
 
 	var p db.Page
 	db.MainDB.Where("menu_id = ?", menu.Id).First(&p)
-	return ctx.Render("pages/page", fiber.Map{"page": p})
+	var pages []db.Page
+	db.MainDB.Where("parent_id = ?", p.ID).Order("updated_at desc").Find(&pages)
+	return ctx.Render("pages/page", fiber.Map{"page": p, "pages": pages})
 
 }
 
@@ -38,41 +46,6 @@ func GetMainPage(ctx *fiber.Ctx) error {
 }
 
 func Update(ctx *fiber.Ctx) error {
-	//var m db.Menu
-	//db.MainDB.Table(m.TableName()).Where("url = ''").First(&m)
-	//var p db.MainPage
-	//
-	//id := ctx.FormValue("id")
-	//slug := ctx.FormValue("slug")
-	//title := ctx.FormValue("title")
-	//image_url := ctx.FormValue("image_url")
-	//content := ctx.FormValue("content")
-	//menu_id := ctx.FormValue("menu_id")
-	//
-	//p.Page.ID, _ = strconv.Atoi(id)
-	//p.Page.Slug = slug
-	//p.Page.Title = title
-	//p.Page.ImageUrl = image_url
-	//p.Page.Content = content
-	//mnuId, _ := strconv.Atoi(menu_id)
-	//p.Page.MenuId = int64(mnuId)
-	//
-	//db.DumpPrettyJson(p, "mainpage")
-	//
-	//var oldPage db.Page
-	//db.MainDB.Where("id = ?", p.Page.ID).First(&oldPage)
-	//
-	//p.Page.UpdatedAt = time.Now()
-	//if oldPage.ID == 0 {
-	//	p.Page.CreatedAt = time.Now()
-	//} else {
-	//	p.Page.CreatedAt = oldPage.CreatedAt
-	//}
-	//if p.Page.Slug == "" {
-	//	p.Page.Slug = fmt.Sprintf("%v", time.Now().Unix())
-	//}
-	//_ = p.Page.Update()
-
 	var p db.Page
 	if err := ctx.BodyParser(&p); err != nil {
 		return ctx.Status(400).JSON(fiber.Map{"message": "not Created"})
@@ -93,6 +66,8 @@ func Create(ctx *fiber.Ctx) error {
 	if err := ctx.BodyParser(&p); err != nil {
 		return ctx.Status(400).JSON(fiber.Map{"message": "not Created"})
 	}
+
+	p.Slug = fmt.Sprintf("%v", time.Now().Unix())
 	if err := p.Create(); err != nil {
 		return ctx.Status(400).JSON(fiber.Map{"message": "not Created"})
 	}
@@ -101,9 +76,38 @@ func Create(ctx *fiber.Ctx) error {
 
 func Upload(ctx *fiber.Ctx) error {
 	image, err := ctx.FormFile("image")
-	if err == nil {
-		fmt.Printf("==> %#v\n", image.Filename)
+	var page db.Page
+	pageId := ctx.FormValue("pageId")
+	if pageId != "" {
+		id, _ := strconv.Atoi(pageId)
+		page.ID = int64(id)
+		_ = page.Get(page.ID)
+	} else {
+		return ctx.Status(400).JSON(fiber.Map{"message": "not saved"})
 	}
-	fmt.Printf("==> %#v\n", ctx.FormValue("pageId"))
+	if err == nil {
+		outDir := "./uploads/pages/"
+		_ = os.MkdirAll(outDir, 0755)
+		ext := filepath.Ext(image.Filename)
+		image.Filename = uuid.New().String() + ext
+		fName := path.Join(outDir, image.Filename)
+		if err := ctx.SaveFile(image, fName); err != nil {
+			return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
+		}
+		page.ImageURL = "/" + fName
+		if page.ID > 0 {
+			_ = page.Update()
+		}
+	}
 	return ctx.JSON(fiber.Map{"status": "success"})
+}
+
+func ShowPage(ctx *fiber.Ctx) error {
+	id, _ := ctx.ParamsInt("id", 0)
+	var p db.Page
+	var ps []db.Page
+	if err := p.Get(int64(id)); err != nil {
+		return ctx.Status(400).JSON(fiber.Map{"message": "not Created"})
+	}
+	return ctx.Render("pages/page", fiber.Map{"page": p, "pages": ps})
 }

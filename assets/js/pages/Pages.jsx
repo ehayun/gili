@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import axios from 'axios';
 import HebrewEditor from '../components/HebrewEditor';
 
@@ -21,11 +21,25 @@ const Pages = () => {
   const [modalMode, setModalMode] = useState('add'); // 'add' or 'edit'
   const [imagePreview, setImagePreview] = useState('');
   const fileInputRef = useRef(null);
+  const modalRef = useRef(null);
 
   // Fetch pages, menus, and parent pages on component mount
   useEffect(() => {
     fetchPages();
     fetchMenus();
+
+    // Set up Bootstrap modal event listener to reset form on modal hide
+    const pageModal = document.getElementById('pageModal');
+    if (pageModal) {
+      pageModal.addEventListener('hidden.bs.modal', resetForm);
+    }
+
+    return () => {
+      // Clean up event listener on component unmount
+      if (pageModal) {
+        pageModal.removeEventListener('hidden.bs.modal', resetForm);
+      }
+    };
   }, []);
 
   const fetchPages = async () => {
@@ -38,7 +52,7 @@ const Pages = () => {
       setParentPages(pagesData);
     } catch (error) {
       console.error('Error fetching pages:', error);
-      alert('Failed to fetch pages. Please try again.');
+      alert('נכשל בטעינת דפים. אנא נסה שוב.');
     }
   };
 
@@ -70,18 +84,18 @@ const Pages = () => {
   };
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setCurrentPage({ ...currentPage, [name]: value });
+    const {name, value} = e.target;
+    setCurrentPage({...currentPage, [name]: value});
   };
 
   const handleContentChange = (content) => {
-    setCurrentPage({ ...currentPage, content });
+    setCurrentPage({...currentPage, content});
   };
 
   const handleSelectChange = (e) => {
-    const { name, value } = e.target;
+    const {name, value} = e.target;
     const numValue = value === '' ? null : parseInt(value, 10);
-    setCurrentPage({ ...currentPage, [name]: numValue });
+    setCurrentPage({...currentPage, [name]: numValue});
   };
 
   const handleImageChange = (e) => {
@@ -95,7 +109,6 @@ const Pages = () => {
       reader.readAsDataURL(file);
     }
   };
-
 
   const resetForm = () => {
     setCurrentPage({
@@ -116,11 +129,15 @@ const Pages = () => {
   };
 
   const openAddModal = () => {
+    // Make sure we reset the form completely before showing the modal
     resetForm();
-    // Using data-bs-toggle attribute for modal control
   };
 
   const openEditModal = (page) => {
+    // First reset any previous data
+    resetForm();
+
+    // Then set the current page data
     setCurrentPage({
       id: page.id,
       slug: page.slug,
@@ -189,29 +206,35 @@ const Pages = () => {
           }
         } catch (uploadError) {
           console.error('Error uploading image:', uploadError);
-          alert('Page saved but image upload failed. Please try editing the page to upload the image again.');
+          alert('הדף נשמר אך העלאת התמונה נכשלה. אנא נסה לערוך את הדף כדי להעלות את התמונה שוב.');
         }
       }
 
       // Refresh the page list
       fetchPages();
-      // resetForm();
-      const cancel  = document.getElementById("m-cancel");
-      cancel.click()
+
+      // Close the modal
+      const cancelButton = document.getElementById("m-cancel");
+      if (cancelButton) {
+        cancelButton.click();
+      }
+
+      // Reset the form
+      resetForm();
     } catch (error) {
       console.error('Error saving page:', error);
-      alert('Failed to save page. Please try again.');
+      alert('נכשל בשמירת הדף. אנא נסה שוב.');
     }
   };
 
   const handleDelete = async (pageId) => {
-    if (window.confirm('Are you sure you want to delete this page?')) {
+    if (window.confirm('האם אתה בטוח שברצונך למחוק דף זה?')) {
       try {
         await axios.delete(`/api/pages/${pageId}`);
         fetchPages();
       } catch (error) {
         console.error('Error deleting page:', error);
-        alert('Failed to delete page. Please try again.');
+        alert('נכשל במחיקת הדף. אנא נסה שוב.');
       }
     }
   };
@@ -225,7 +248,7 @@ const Pages = () => {
       <div className="container-fluid mt-4">
         <div className="row mb-4">
           <div className="col">
-            <h2>Pages Management</h2>
+            <h2>ניהול דפים</h2>
           </div>
         </div>
 
@@ -238,7 +261,7 @@ const Pages = () => {
               <input
                   type="text"
                   className="form-control"
-                  placeholder="Search pages by title or slug..."
+                  placeholder="חפש דפים לפי כותרת או נתיב..."
                   value={searchTerm}
                   onChange={handleSearch}
               />
@@ -251,7 +274,7 @@ const Pages = () => {
                 data-bs-toggle="modal"
                 data-bs-target="#pageModal"
             >
-              <i className="bi bi-plus-circle me-1"></i> Add New Page
+              <i className="bi bi-plus-circle me-1"></i> הוסף דף חדש
             </button>
           </div>
         </div>
@@ -262,12 +285,12 @@ const Pages = () => {
               <table className="table table-striped table-hover">
                 <thead className="table-light">
                 <tr>
-                  <th>ID</th>
-                  <th>Title</th>
-                  <th>Slug</th>
-                  <th>Menu</th>
-                  <th>Parent</th>
-                  <th>Updated At</th>
+                  <th>מזהה</th>
+                  <th>כותרת</th>
+                  <th>נתיב</th>
+                  <th>תפריט</th>
+                  <th>דף אב</th>
+                  <th>עודכן בתאריך</th>
                   <th></th>
                 </tr>
                 </thead>
@@ -289,13 +312,13 @@ const Pages = () => {
                                   data-bs-toggle="modal"
                                   data-bs-target="#pageModal"
                               >
-                                <i className="bi bi-pencil"></i> Edit
+                                <i className="bi bi-pencil"></i> ערוך
                               </button>
                               <button
                                   className="btn btn-sm btn-outline-danger"
                                   onClick={() => handleDelete(page.id)}
                               >
-                                <i className="bi bi-trash"></i> Delete
+                                <i className="bi bi-trash"></i> מחק
                               </button>
                             </div>
                           </td>
@@ -304,7 +327,7 @@ const Pages = () => {
                 ) : (
                     <tr>
                       <td colSpan="7" className="text-center">
-                        {searchTerm ? 'No pages found matching your search' : 'No pages available'}
+                        {searchTerm ? 'לא נמצאו דפים התואמים את החיפוש שלך' : 'אין דפים זמינים'}
                       </td>
                     </tr>
                 )}
@@ -315,19 +338,26 @@ const Pages = () => {
         </div>
 
         {/* Page Modal - Add/Edit */}
-        <div className="modal fade" id="pageModal" tabIndex="-1" aria-labelledby="pageModalLabel" aria-hidden="true">
+        <div
+            className="modal fade"
+            id="pageModal"
+            tabIndex="-1"
+            aria-labelledby="pageModalLabel"
+            aria-hidden="true"
+            ref={modalRef}
+        >
           <div className="modal-dialog modal-lg">
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title" id="pageModalLabel">
-                  {modalMode === 'add' ? 'Add New Page' : 'Edit Page'}
+                  {modalMode === 'add' ? 'הוסף דף חדש' : 'ערוך דף'}
                 </h5>
                 <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
               <form onSubmit={handleSubmit}>
                 <div className="modal-body">
                   <div className="mb-3">
-                    <label htmlFor="title" className="form-label">Title</label>
+                    <label htmlFor="title" className="form-label">כותרת</label>
                     <input
                         type="text"
                         className="form-control"
@@ -339,22 +369,9 @@ const Pages = () => {
                     />
                   </div>
 
-                  <div className="mb-3">
-                    <label htmlFor="slug" className="form-label">Slug</label>
-                    <input
-                        type="text"
-                        className="form-control"
-                        id="slug"
-                        name="slug"
-                        value={currentPage.slug}
-                        onChange={handleInputChange}
-                        required
-                    />
-                    <div className="form-text">URL-friendly name (e.g., "about-us")</div>
-                  </div>
 
                   <div className="mb-3">
-                    <label htmlFor="image" className="form-label">Image</label>
+                    <label htmlFor="image" className="form-label">תמונה</label>
                     <div className="input-group">
                       <input
                           type="file"
@@ -384,16 +401,16 @@ const Pages = () => {
                         <div className="mt-2">
                           <img
                               src={imagePreview}
-                              alt="Preview"
+                              alt="תצוגה מקדימה"
                               className="img-thumbnail"
-                              style={{ maxHeight: '200px' }}
+                              style={{maxHeight: '200px'}}
                           />
                         </div>
                     )}
                   </div>
 
                   <div className="mb-3">
-                    <label htmlFor="content" className="form-label">Content</label>
+                    <label htmlFor="content" className="form-label">תוכן</label>
                     <HebrewEditor
                         value={currentPage.content}
                         onChange={handleContentChange}
@@ -401,7 +418,7 @@ const Pages = () => {
                   </div>
 
                   <div className="mb-3">
-                    <label htmlFor="keywords" className="form-label">Keywords</label>
+                    <label htmlFor="keywords" className="form-label">מילות מפתח</label>
                     <input
                         type="text"
                         className="form-control"
@@ -410,12 +427,12 @@ const Pages = () => {
                         value={currentPage.keywords}
                         onChange={handleInputChange}
                     />
-                    <div className="form-text">Comma-separated list of keywords for SEO</div>
+                    <div className="form-text">רשימת מילות מפתח מופרדות בפסיקים עבור SEO</div>
                   </div>
 
                   <div className="row">
                     <div className="col-md-6 mb-3">
-                      <label htmlFor="menuID" className="form-label">Menu</label>
+                      <label htmlFor="menuID" className="form-label">תפריט</label>
                       <select
                           className="form-select"
                           id="menuID"
@@ -423,7 +440,7 @@ const Pages = () => {
                           value={currentPage.menuID || ''}
                           onChange={handleSelectChange}
                       >
-                        <option value="">None</option>
+                        <option value="">ללא</option>
                         {menus.map(menu => (
                             <option key={menu.id} value={menu.id}>{menu.title}</option>
                         ))}
@@ -431,7 +448,7 @@ const Pages = () => {
                     </div>
 
                     <div className="col-md-6 mb-3">
-                      <label htmlFor="parentID" className="form-label">Parent Page</label>
+                      <label htmlFor="parentID" className="form-label">דף אב</label>
                       <select
                           className="form-select"
                           id="parentID"
@@ -439,7 +456,7 @@ const Pages = () => {
                           value={currentPage.parentID || ''}
                           onChange={handleSelectChange}
                       >
-                        <option value="">None</option>
+                        <option value="">ללא</option>
                         {parentPages.filter(p => p.id !== currentPage.id).map(page => (
                             <option key={page.id} value={page.id}>{page.title}</option>
                         ))}
@@ -449,9 +466,10 @@ const Pages = () => {
                 </div>
 
                 <div className="modal-footer">
-                  <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" id={"m-cancel"}>Cancel</button>
+                  <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" id="m-cancel">ביטול
+                  </button>
                   <button type="submit" className="btn btn-primary">
-                    {modalMode === 'add' ? 'Add Page' : 'Save Changes'}
+                    {modalMode === 'add' ? 'הוסף דף' : 'שמור שינויים'}
                   </button>
                 </div>
               </form>

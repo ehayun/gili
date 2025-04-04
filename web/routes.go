@@ -21,6 +21,7 @@ func routes(app *fiber.App) {
 	app.Post("/logout", auth.Logout)
 
 	app.Get("/:page", pages.Page)
+	app.Get("/pages/:id", pages.ShowPage)
 
 	root := app.Group("/admin", mwIsManager)
 	root.Get("/users", users.Index)
