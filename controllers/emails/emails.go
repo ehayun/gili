@@ -56,10 +56,11 @@ func SendEmail(ctx *fiber.Ctx, tmplName, to, title string, params fiber.Map) err
 		d = gomail.NewDialer(smtpServer, port, smtpUsername, smtpPassword)
 	}
 	// Send the email
-	if err := d.DialAndSend(m); err != nil {
-		log.Errorf("failed to send email: %v", err)
-		return fmt.Errorf("failed to send email: %v", err)
-	}
+	go func() {
+		if err := d.DialAndSend(m); err != nil {
+			log.Errorf("failed to send email: %v", err)
+		}
+	}()
 	return nil
 }
 

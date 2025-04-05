@@ -3,6 +3,7 @@ package homepage
 import (
 	"gishur/controllers/emails"
 	"gishur/db"
+	"gishur/translate"
 	"github.com/gofiber/fiber/v2"
 	"github.com/sujit-baniya/flash"
 )
@@ -14,7 +15,9 @@ func Index(c *fiber.Ctx) error {
 	p, _ = p.GetMainPage()
 
 	carousels := cs.List()
-	return c.Render("homepage/index", fiber.Map{"page": p.Page, "carousels": carousels, "hasCarousels": len(carousels) > 0, "cards": cards.List()})
+	return c.Render("homepage/index", fiber.Map{
+		"footer": false,
+		"page":   p.Page, "carousels": carousels, "hasCarousels": len(carousels) > 0, "cards": cards.List()})
 }
 
 func Send(ctx *fiber.Ctx) error {
@@ -23,7 +26,7 @@ func Send(ctx *fiber.Ctx) error {
 		FirstName string
 		LastName  string
 		Email     string
-		Subject   string
+		Phone     string
 		Message   string
 		CopyEmail string
 	}
@@ -34,9 +37,12 @@ func Send(ctx *fiber.Ctx) error {
 		"success": true,
 		"message": "Message sent successfully",
 		"sender":  message,
-		"Title":   message.Subject,
+		"Phone":   message.Phone,
 	}
 
-	_ = emails.SendEmail(ctx, "message", "giliben02@gmail.com", "New message", mp)
-	return flash.WithSuccess(ctx, mp).Render("homepage/temp", mp)
+	var p db.Param
+	param, _ := p.Get()
+
+	_ = emails.SendEmail(ctx, "message", param.Email, translate.Trans("New message"), mp)
+	return flash.WithSuccess(ctx, mp).RedirectBack("/")
 }

@@ -35,7 +35,10 @@ func (p *Page) Update() error {
 
 func (p *Page) List() []Page {
 	var pages []Page
-	MainDB.Table(p.TableName()).Order("updated_at desc").Find(&pages)
+	MainDB.Table(p.TableName()).
+		Preload("Menu").
+		Preload("Parent").
+		Order("updated_at desc").Find(&pages)
 	return pages
 }
 

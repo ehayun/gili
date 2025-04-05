@@ -21,7 +21,7 @@ function Users() {
 
     const fetchUsers = async () => {
         try {
-            const response = await fetch('/manager/users');
+            const response = await fetch('/api/users');
             const data = await response.json();
             setUsers(data);
         } catch (error) {
@@ -63,6 +63,7 @@ function Users() {
             await fetchUsers();
             handleCloseModal();
         } catch (error) {
+            console.log('Error saving user:', error);
             setMessage('שגיאה בשמירת המשתמש. יתכן שכבר קיים משתמש עם מייל כזה. ');
         }
     };

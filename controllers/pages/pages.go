@@ -22,6 +22,7 @@ func MainPage(ctx *fiber.Ctx) error {
 
 func Page(ctx *fiber.Ctx) error {
 	pageId := ctx.Params("page")
+	fmt.Printf("==> %#v\n", pageId)
 	var menu db.Menu
 	if err := db.MainDB.Where("url = ?", pageId).First(&menu).Error; err != nil {
 		return ctx.Render("pages/page", fiber.Map{"nopage": pageId})
@@ -31,7 +32,7 @@ func Page(ctx *fiber.Ctx) error {
 	db.MainDB.Where("menu_id = ?", menu.Id).First(&p)
 	var pages []db.Page
 	db.MainDB.Where("parent_id = ?", p.ID).Order("updated_at desc").Find(&pages)
-	return ctx.Render("pages/page", fiber.Map{"page": p, "pages": pages})
+	return ctx.Render("pages/page", fiber.Map{"page": p, "pages": pages, "footer": len(pages) == 0})
 
 }
 

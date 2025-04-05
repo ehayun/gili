@@ -47,6 +47,7 @@ const Pages = () => {
       const response = await axios.get('/api/pages');
       // Extract data from the rows field
       const pagesData = response.data.rows || [];
+      console.log('Fetched pages:', pagesData);
       setPages(pagesData);
       setFilteredPages(pagesData);
       setParentPages(pagesData);
@@ -285,7 +286,6 @@ const Pages = () => {
               <table className="table table-striped table-hover">
                 <thead className="table-light">
                 <tr>
-                  <th>מזהה</th>
                   <th>כותרת</th>
                   <th>נתיב</th>
                   <th>תפריט</th>
@@ -298,10 +298,9 @@ const Pages = () => {
                 {filteredPages.length > 0 ? (
                     filteredPages.map(page => (
                         <tr key={page.id}>
-                          <td>{page.id}</td>
                           <td>{page.title}</td>
                           <td>{page.slug}</td>
-                          <td>{page.menu ? page.menu.name : '-'}</td>
+                          <td>{page.menu ? page.menu.title : '-'}</td>
                           <td>{page.parent ? page.parent.title : '-'}</td>
                           <td>{formatDate(page.updated_at)}</td>
                           <td>

@@ -30,6 +30,9 @@ func routes(app *fiber.App) {
 	root.Get("/pages", pages.Index)
 	root.Get("/main-page", pages.MainPage)
 
+	mngr := app.Group("/manager", mwIsManager)
+	mngr.Put("/users/:id", users.Update)
+
 	api := app.Group("/api", mwIsLogin)
 	api.Get("/main-page", pages.GetMainPage)
 	api.Get("/users", users.List)

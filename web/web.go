@@ -86,9 +86,24 @@ func Web() {
 
 		// Set flash message variables
 		m := flash.Get(ctx)
+		url := ctx.OriginalURL()
+		doSave := true
+		if strings.Contains(url, "/uploads") {
+			doSave = false
+		}
+		if strings.Contains(url, "/public") {
+			doSave = false
+		}
+		if doSave {
+			m["oldUrl"] = url
+		}
 		user := db.GetCurrUser(ctx)
 		m["curr_user"] = user
 
+		m["footer"] = true
+		if strings.Contains(url, "/admin") {
+			m["footer"] = false
+		}
 		m["params"] = param
 		m["menus"] = menus
 		m["mode"] = config.Config.Mode

@@ -3,7 +3,7 @@
     <div class="clearfix">
       <h3>{{.page.Title}}</h3>
       {{if ne .page.ImageURL ""}}
-      <img src="{{.page.ImageURL}}" alt="placeholder" class="float-start me-3 mb-3 img-fluid rounded shadow-sm"
+      <img src="{{.page.ImageURL}}" alt="placeholder" class="float-end se-3 mb-3 img-fluid rounded shadow-sm"
            style="max-width: 40%;">
       {{end}}
       {{.page.Content|safe}}
