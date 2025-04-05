@@ -101,7 +101,7 @@ func Web() {
 		m["curr_user"] = user
 
 		m["footer"] = true
-		if strings.Contains(url, "/admin") {
+		if strings.Contains(url, "/admin") || strings.Contains(url, "/login") {
 			m["footer"] = false
 		}
 		m["params"] = param

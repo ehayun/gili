@@ -5,7 +5,6 @@ import (
 	"errors"
 	"gishur/config"
 	"gishur/db"
-	"gishur/pkg"
 	"github.com/gofiber/fiber/v2"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -32,13 +31,12 @@ func PostLogin(c *fiber.Ctx) error {
 
 	loggedIn := false
 	if config.Config.Mode == "production" {
-		ldap := pkg.GetUser(login.Email, login.Password)
-		if user.GetUserByEmail(ldap.Email) != nil {
+		if user.GetUserByEmail(login.Email) != nil {
 			return c.Render("auth/login", fiber.Map{
 				"errors": "Invalid user/pass",
 			})
 		} else {
-			loggedIn = true
+			loggedIn = CheckPasswordHash(login.Password, user.HashedPassword)
 		}
 	} else {
 		if user.GetUserByEmail(login.Email) != nil {
