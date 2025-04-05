@@ -51,3 +51,8 @@ func (p *Page) Get(id int64) error {
 	res := MainDB.Where("id = ?", id).First(p)
 	return res.Error
 }
+
+func (p *Page) Delete() error {
+	res := MainDB.Delete(&p)
+	return res.Error
+}

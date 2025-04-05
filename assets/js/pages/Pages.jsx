@@ -137,7 +137,6 @@ const Pages = () => {
   const openEditModal = (page) => {
     // First reset any previous data
     resetForm();
-
     // Then set the current page data
     setCurrentPage({
       id: page.id,
@@ -150,6 +149,8 @@ const Pages = () => {
       parentID: page.parent_id
     });
     setImagePreview(page.image_url);
+
+    // console.log('Editing page:', page);
     setModalMode('edit');
   };
 
@@ -174,10 +175,10 @@ const Pages = () => {
 
       // First save the page to get an ID (for new pages)
       if (modalMode === 'add') {
-        response = await axios.post('/api/pages', pageData);
+        response = await axios.post('/manager/pages', pageData);
         createdPage = response.data;
       } else {
-        response = await axios.put(`/api/pages/${currentPage.id}`, pageData);
+        response = await axios.put(`/manager/pages/${currentPage.id}`, pageData);
         createdPage = response.data;
       }
 
@@ -188,7 +189,7 @@ const Pages = () => {
         formData.append('pageId', createdPage.id); // Pass the page ID to the upload endpoint
 
         try {
-          const uploadResponse = await axios.post('/api/pages/upload', formData, {
+          const uploadResponse = await axios.post('/manager/pages/upload', formData, {
             headers: {
               'Content-Type': 'multipart/form-data'
             }
@@ -231,7 +232,7 @@ const Pages = () => {
   const handleDelete = async (pageId) => {
     if (window.confirm('האם אתה בטוח שברצונך למחוק דף זה?')) {
       try {
-        await axios.delete(`/api/pages/${pageId}`);
+        await axios.delete(`/manager/pages/${pageId}`);
         fetchPages();
       } catch (error) {
         console.error('Error deleting page:', error);

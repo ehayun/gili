@@ -15,7 +15,7 @@ func List(ctx *fiber.Ctx) error {
 	var users []db.User
 	db.MainDB.Find(&users)
 	for i, user := range users {
-		users[i].IsAdmin = user.Role == "admin"
+		users[i].IsAdmin = users[i].IsAdmin || user.Role == "admin"
 	}
 	return ctx.JSON(users)
 }
@@ -75,11 +75,35 @@ func Update(ctx *fiber.Ctx) error {
 	user.ID = int64(id)
 	db.MainDB.Where("id = ?", id).First(&user)
 	_ = ctx.BodyParser(&user)
+
 	if user.UpdatedPassword > "" {
 		user.HashedPassword, _ = auth.HashPassword(user.UpdatedPassword)
 	}
 	user.UpdatedAt = time.Now()
+	if user.IsAdmin {
+		user.Role = "admin"
+	} else {
+		user.Role = "user"
+	}
 	if err := user.Update(); err != nil {
+		return ctx.SendStatus(fiber.StatusConflict)
+	}
+	return ctx.JSON(user)
+}
+
+func Create(ctx *fiber.Ctx) error {
+	var user db.User
+	_ = ctx.BodyParser(&user)
+	if user.IsAdmin {
+		user.Role = "admin"
+	} else {
+		user.Role = "user"
+	}
+	if user.UpdatedPassword > "" {
+		user.HashedPassword, _ = auth.HashPassword(user.UpdatedPassword)
+	}
+	user.UpdatedAt = time.Now()
+	if err := user.Create(); err != nil {
 		return ctx.SendStatus(fiber.StatusConflict)
 	}
 	return ctx.JSON(user)

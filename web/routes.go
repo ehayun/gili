@@ -32,6 +32,11 @@ func routes(app *fiber.App) {
 
 	mngr := app.Group("/manager", mwIsManager)
 	mngr.Put("/users/:id", users.Update)
+	mngr.Post("/users", users.Create)
+	mngr.Post("/pages", pages.Create)
+	mngr.Post("/pages/upload", pages.Upload)
+	mngr.Delete("/pages/:id", pages.Delete)
+	mngr.Put("/pages/:slug?", pages.Update)
 
 	api := app.Group("/api", mwIsLogin)
 	api.Get("/main-page", pages.GetMainPage)
@@ -54,8 +59,5 @@ func routes(app *fiber.App) {
 	api.Get("/cards", cards.GetCard)
 
 	api.Get("/pages", pages.List)
-	api.Post("/pages", pages.Create)
-	api.Post("/pages/upload", pages.Upload)
-	api.Put("/pages/:slug?", pages.Update)
 
 }

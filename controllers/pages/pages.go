@@ -22,7 +22,6 @@ func MainPage(ctx *fiber.Ctx) error {
 
 func Page(ctx *fiber.Ctx) error {
 	pageId := ctx.Params("page")
-	fmt.Printf("==> %#v\n", pageId)
 	var menu db.Menu
 	if err := db.MainDB.Where("url = ?", pageId).First(&menu).Error; err != nil {
 		return ctx.Render("pages/page", fiber.Map{"nopage": pageId})
@@ -111,4 +110,14 @@ func ShowPage(ctx *fiber.Ctx) error {
 		return ctx.Status(400).JSON(fiber.Map{"message": "not Created"})
 	}
 	return ctx.Render("pages/page", fiber.Map{"page": p, "pages": ps})
+}
+
+func Delete(ctx *fiber.Ctx) error {
+	id, _ := ctx.ParamsInt("id", 0)
+	var p db.Page
+	if err := p.Get(int64(id)); err != nil {
+		return ctx.Status(400).JSON(fiber.Map{"message": "not found"})
+	}
+	_ = p.Delete()
+	return ctx.JSON(p)
 }

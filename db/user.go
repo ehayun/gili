@@ -1,6 +1,8 @@
 package db
 
-import "time"
+import (
+	"time"
+)
 
 type User struct {
 	ID              int64     `gorm:"id" json:"id"`
@@ -12,7 +14,7 @@ type User struct {
 	CreatedAt       time.Time `gorm:"created_at" json:"inserted_at"`
 	UpdatedAt       time.Time `gorm:"updated_at" json:"updated_at"`
 	Role            string    `gorm:"role" json:"role,omitempty"`
-	IsAdmin         bool      `gorm:"is_admin" json:"is_admin,omitempty"`
+	IsAdmin         bool      `json:"is_admin"`
 }
 
 func (u *User) Get(id int64) error {
