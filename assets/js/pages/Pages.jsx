@@ -134,24 +134,32 @@ const Pages = () => {
     resetForm();
   };
 
-  const openEditModal = (page) => {
-    // First reset any previous data
-    resetForm();
-    // Then set the current page data
-    setCurrentPage({
-      id: page.id,
-      slug: page.slug,
-      title: page.title,
-      imageURL: page.image_url,
-      content: page.content,
-      keywords: page.keywords,
-      menuID: page.menu_id,
-      parentID: page.parent_id
-    });
-    setImagePreview(page.image_url);
-
-    // console.log('Editing page:', page);
-    setModalMode('edit');
+  const openEditModal = async (page) => {
+    try {
+      // First reset any previous data
+      resetForm();
+      
+      // Fetch the latest page data
+      const freshPageData = await fetchPageById(page.id);
+      
+      // Set the current page with the fresh data
+      setCurrentPage({
+        id: freshPageData.id,
+        slug: freshPageData.slug,
+        title: freshPageData.title,
+        imageURL: freshPageData.image_url,
+        content: freshPageData.content,
+        keywords: freshPageData.keywords,
+        menuID: freshPageData.menu_id,
+        parentID: freshPageData.parent_id
+      });
+      
+      setImagePreview(freshPageData.image_url);
+      setModalMode('edit');
+    } catch (error) {
+      alert('שגיאה בטעינת נתוני הדף. אנא נסה שוב.');
+      console.error('Error opening edit modal:', error);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -246,6 +254,17 @@ const Pages = () => {
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
   };
 
+  const fetchPageById = async (pageId) => {
+    try {
+      const response = await axios.get(`/api/pages/${pageId}`);
+      // Assuming the API returns the page data directly
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching page details:', error);
+      throw error;
+    }
+  };
+
   return (
       <div className="container-fluid mt-4">
         <div className="row mb-4">
@@ -308,7 +327,7 @@ const Pages = () => {
                             <div className="btn-group">
                               <button
                                   className="btn btn-sm btn-outline-primary"
-                                  onClick={() => openEditModal(page)}
+                                  onClick={() => openEditModal(page).catch(console.error)}
                                   data-bs-toggle="modal"
                                   data-bs-target="#pageModal"
                               >

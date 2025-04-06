@@ -3,13 +3,14 @@ package pages
 import (
 	"fmt"
 	"gishur/db"
-	"github.com/gofiber/fiber/v2"
-	"github.com/google/uuid"
 	"os"
 	"path"
 	"path/filepath"
 	"strconv"
 	"time"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 )
 
 func Index(ctx *fiber.Ctx) error {
@@ -119,5 +120,13 @@ func Delete(ctx *fiber.Ctx) error {
 		return ctx.Status(400).JSON(fiber.Map{"message": "not found"})
 	}
 	_ = p.Delete()
+	return ctx.JSON(p)
+}
+func GetPage(ctx *fiber.Ctx) error {
+	id, _ := ctx.ParamsInt("id", 0)
+	var p db.Page
+	if err := p.Get(int64(id)); err != nil {
+		return ctx.Status(400).JSON(fiber.Map{"message": "not found"})
+	}
 	return ctx.JSON(p)
 }

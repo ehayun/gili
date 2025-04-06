@@ -9,6 +9,7 @@ import (
 	"gishur/controllers/pages"
 	"gishur/controllers/params"
 	"gishur/controllers/users"
+
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -59,5 +60,6 @@ func routes(app *fiber.App) {
 	api.Get("/cards", cards.GetCard)
 
 	api.Get("/pages", pages.List)
+	api.Get("/pages/:id", pages.GetPage)
 
 }
