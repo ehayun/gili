@@ -29,7 +29,7 @@ func SendEmail(ctx *fiber.Ctx, tmplName, to, title string, params fiber.Map) err
 
 	// Setup the email message
 	m := gomail.NewMessage()
-	senderName := "tzlev"
+	senderName := "website"
 	fromSender := fmt.Sprintf("%s <%s>", senderName, config.Config.MailServer.MailFromAddress)
 	m.SetHeader("From", fromSender)
 	m.SetHeader("Reply-To", "do_not_reply@gili-gishurim.com")
