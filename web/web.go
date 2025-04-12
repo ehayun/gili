@@ -362,10 +362,38 @@ func hideNotActive(uid int64) string {
 	return ""
 }
 
-func safe(s string) template.HTML {
+func safe(s string, leng ...int) template.HTML {
 	if s == "" {
 		return ""
 	}
 	s = strings.Replace(s, "\n", "<br>", -1)
+	if len(leng) > 0 {
+		s = truncateSafe(s, leng[0])
+	}
 	return template.HTML(s)
+}
+
+func truncateSafe(htmlStr string, limit int) string {
+	// If the string is empty or already within our limit, return it as is.
+	if htmlStr == "" || len(htmlStr) <= limit {
+		return htmlStr
+	}
+
+	// First, cut the string to the desired length.
+	truncated := htmlStr[:limit]
+
+	// Check if we cut the string in the middle of an HTML tag.
+	// We look for the last occurrence of '<' and '>' in the truncated string.
+	lastOpen := strings.LastIndex(truncated, "<")
+	lastClose := strings.LastIndex(truncated, ">")
+	// If the last '<' comes after the last '>', it means we are in the middle of a tag.
+	if lastOpen > lastClose {
+		// Remove the incomplete tag.
+		truncated = truncated[:lastOpen]
+	}
+
+	// Optionally, add an ellipsis to indicate that truncation occurred.
+	truncated += "..."
+
+	return truncated
 }

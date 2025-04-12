@@ -6,14 +6,14 @@
       <img src="{{.page.ImageURL}}" alt="placeholder" class="float-end se-3 mb-3 img-fluid rounded shadow-sm"
            style="max-width: 40%;">
       {{end}}
-      {{.page.Content|safe}}
+      {{.page.Content | safe}}
     </div>
     <hr>
     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
       {{range .pages}}
       <a href="/pages/{{.ID}}" class="text-decoration-none">
         <div class="col">
-          <div class="card h-100">
+          <div class="card xh-100">
             {{if ne .ImageURL ""}}
             <div class="ratio ratio-16x9">
               <img src="{{.ImageURL}}" class="card-img-top object-fit-cover rounded-top" alt="{{.Title}}">
@@ -21,14 +21,13 @@
             {{end}}
             <div class="card-body">
               <h4 class="card-title ">
-                <span class="badge text-bg-primary p-2">{{.Title}}</span>
+                <span class="badge text-bg-primary px-2 w-100">{{.Title}}</span>
               </h4>
-              <p class="card-text">{{.Content | safe}}</p>
+              <p class="card-text">{{safe .Content 220}}</p>
+              <button class="btn btn-primary">{{_ "Continue"}}</button>
             </div>
             <div class="card-footer">
-              <small class="text-muted"></small>
             </div>
-          </div>
         </div>
       </a>
       {{end}}
