@@ -9,28 +9,29 @@
       {{.page.Content | safe}}
     </div>
     <hr>
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
-      {{range .pages}}
-      <a href="/pages/{{.ID}}" class="text-decoration-none">
-        <div class="col">
-          <div class="card xh-100">
-            {{if ne .ImageURL ""}}
-            <div class="ratio ratio-16x9">
-              <img src="{{.ImageURL}}" class="card-img-top object-fit-cover rounded-top" alt="{{.Title}}">
+    <div class="row g-2">
+      <div class="row">
+        {{range .pages}}
+        <div class="col-12 col-md-3">
+          <div class="p-3 border bg-light">
+            <div class="card" style="width: 18rem;">
+              {{if ne .ImageURL ""}}
+              <div class="ratio ratio-16x9">
+                <img src="{{.ImageURL}}" class="card-img-top object-fit-cover rounded-top" alt="{{.Title}}">
+              </div>
+              {{end}}
+              <div class="card-body">
+                <h5 class="card-title">{{.Title}}</h5>
+                <p class="card-text">
+                  {{safe .Content 220}}
+                </p>
+                <a href="/pages/{{.ID}}" class="btn btn-primary">{{_ "Continue"}}</a>
+              </div>
             </div>
-            {{end}}
-            <div class="card-body">
-              <h4 class="card-title ">
-                <span class="badge text-bg-primary px-2 w-100">{{.Title}}</span>
-              </h4>
-              <p class="card-text">{{safe .Content 220}}</p>
-              <button class="btn btn-primary">{{_ "Continue"}}</button>
-            </div>
-            <div class="card-footer">
-            </div>
+          </div>
         </div>
-      </a>
-      {{end}}
+        {{end}}
+      </div>
     </div>
   </div>
 </div>
