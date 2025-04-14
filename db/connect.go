@@ -38,14 +38,6 @@ func ConnectMain() error {
 		config.Config.MainDb.Port,
 	)
 
-	//dsn := fmt.Sprintf(dbParams,
-	//	config.Config.MainDb.User,
-	//	config.Config.MainDb.Password,
-	//	config.Config.MainDb.Host,
-	//	config.Config.MainDb.Port,
-	//	config.Config.MainDb.Dbname,
-	//)
-
 	if MainDB != nil {
 		dbase, err := MainDB.DB()
 		if err == nil {
