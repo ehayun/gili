@@ -8,6 +8,7 @@ import Params from "./params/Params";
 import Menus from "./menus/Menus";
 import Homepage from "./Homepage/Homepage";
 import Pages from "./pages/Pages";
+import MyPages from "./pages/myPages";
 
 let p = document.getElementById("users-crud");
 
@@ -33,5 +34,5 @@ if (p) {
 
 p = document.getElementById("pages");
 if (p) {
-    ReactDOM.render(<Pages/>, p)
+    ReactDOM.render(<MyPages/>, p)
 }

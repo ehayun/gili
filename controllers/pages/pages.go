@@ -46,13 +46,55 @@ func GetMainPage(ctx *fiber.Ctx) error {
 	return ctx.JSON(result)
 }
 
-func Update(ctx *fiber.Ctx) error {
-	var p db.Page
+func UpdateOrCreate(ctx *fiber.Ctx) error {
+	id, _ := strconv.ParseInt(ctx.Params("id"), 10, 64)
+
+	var p db.SimplePage
 	if err := ctx.BodyParser(&p); err != nil {
-		return ctx.Status(400).JSON(fiber.Map{"message": "not Created"})
+		return ctx.Status(400).JSON(
+			fiber.Map{"message": "not Created"})
 	}
-	if err := p.Update(); err != nil {
-		return ctx.Status(400).JSON(fiber.Map{"message": "not Created"})
+	p.ID = id
+
+	p.ImageURL = ctx.FormValue("image_url")
+
+	mid, _ := strconv.ParseInt(ctx.FormValue("menu_id"), 10, 64)
+	if mid > 0 {
+		p.MenuID = &mid
+	} else {
+		p.MenuID = nil
+	}
+	pid, _ := strconv.ParseInt(ctx.FormValue("parent_id"), 10, 64)
+	if pid > 0 {
+		p.ParentID = &pid
+	} else {
+		p.ParentID = nil
+	}
+
+	p.Keywords = ctx.FormValue("keywords")
+
+	image, err := ctx.FormFile("image")
+	if err == nil {
+		outDir := "./uploads/pages/"
+		_ = os.MkdirAll(outDir, 0755)
+		ext := filepath.Ext(image.Filename)
+		image.Filename = uuid.New().String() + ext
+		fName := path.Join(outDir, image.Filename)
+		if err := ctx.SaveFile(image, fName); err != nil {
+			return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
+		}
+		p.ImageURL = "/" + fName
+	}
+	if p.ID > 0 {
+		err = p.Update()
+	} else {
+		p.Slug = fmt.Sprintf("%v", time.Now().Unix())
+		err = p.Create()
+	}
+
+	if err != nil {
+		return ctx.Status(400).JSON(
+			fiber.Map{"message": "not Created"})
 	}
 	return ctx.JSON(p)
 }
@@ -65,12 +107,14 @@ func List(ctx *fiber.Ctx) error {
 func Create(ctx *fiber.Ctx) error {
 	var p db.Page
 	if err := ctx.BodyParser(&p); err != nil {
-		return ctx.Status(400).JSON(fiber.Map{"message": "not Created"})
+		return ctx.Status(400).JSON(
+			fiber.Map{"message": "not Created"})
 	}
 
 	p.Slug = fmt.Sprintf("%v", time.Now().Unix())
 	if err := p.Create(); err != nil {
-		return ctx.Status(400).JSON(fiber.Map{"message": "not Created"})
+		return ctx.Status(400).JSON(
+			fiber.Map{"message": "not Created"})
 	}
 	return ctx.JSON(p)
 }

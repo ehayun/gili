@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import HebrewEditor from '../components/HebrewEditor';
 
@@ -25,19 +25,19 @@ const Pages = () => {
 
   // Fetch pages, menus, and parent pages on component mount
   useEffect(() => {
+    console.log("Pages component mounted");
     fetchPages();
     fetchMenus();
 
     // Set up Bootstrap modal event listener to reset form on modal hide
     const pageModal = document.getElementById('pageModal');
     if (pageModal) {
-      pageModal.addEventListener('hidden.bs.modal', resetForm);
+      // For testing, comment out the reset to ensure it isn’t wiping our inputs after editing.
+      // pageModal.addEventListener('hidden.bs.modal', resetForm);
     }
-
     return () => {
-      // Clean up event listener on component unmount
       if (pageModal) {
-        pageModal.removeEventListener('hidden.bs.modal', resetForm);
+        // pageModal.removeEventListener('hidden.bs.modal', resetForm);
       }
     };
   }, []);
@@ -47,7 +47,6 @@ const Pages = () => {
       const response = await axios.get('/api/pages');
       // Extract data from the rows field
       const pagesData = response.data.rows || [];
-      console.log('Fetched pages:', pagesData);
       setPages(pagesData);
       setFilteredPages(pagesData);
       setParentPages(pagesData);
@@ -85,18 +84,18 @@ const Pages = () => {
   };
 
   const handleInputChange = (e) => {
-    const {name, value} = e.target;
-    setCurrentPage({...currentPage, [name]: value});
+    const { name, value } = e.target;
+    setCurrentPage({ ...currentPage, [name]: value });
   };
 
   const handleContentChange = (content) => {
-    setCurrentPage({...currentPage, content});
+    setCurrentPage({ ...currentPage, content });
   };
 
   const handleSelectChange = (e) => {
-    const {name, value} = e.target;
+    const { name, value } = e.target;
     const numValue = value === '' ? null : parseInt(value, 10);
-    setCurrentPage({...currentPage, [name]: numValue});
+    setCurrentPage({ ...currentPage, [name]: numValue });
   };
 
   const handleImageChange = (e) => {
@@ -130,32 +129,35 @@ const Pages = () => {
   };
 
   const openAddModal = () => {
-    // Make sure we reset the form completely before showing the modal
+    // Reset the form completely before showing the modal for adding a new page.
     resetForm();
   };
 
   const openEditModal = async (page) => {
     try {
-      // First reset any previous data
-      resetForm();
-      
+      // Do not reset the form immediately here to avoid wiping the title.
+      resetForm();  // Removed to prevent clearing the state during edit mode.
+
       // Fetch the latest page data
       const freshPageData = await fetchPageById(page.id);
-      
-      // Set the current page with the fresh data
+
+      // For debugging, override the title with a hardcoded value.
+      // You can remove the hardcoded value once you have verified the problem.
       setCurrentPage({
         id: freshPageData.id,
         slug: freshPageData.slug,
-        title: freshPageData.title,
-        imageURL: freshPageData.image_url,
+        title: freshPageData.title,           // Hardcoded for testing
+        imageURL: freshPageData.image_url,  // Map image_url to imageURL
         content: freshPageData.content,
         keywords: freshPageData.keywords,
-        menuID: freshPageData.menu_id,
-        parentID: freshPageData.parent_id
+        menuID: freshPageData.menu_id,      // Map menu_id to menuID
+        parentID: freshPageData.parent_id   // Map parent_id to parentID
       });
-      
+
+
       setImagePreview(freshPageData.image_url);
       setModalMode('edit');
+
     } catch (error) {
       alert('שגיאה בטעינת נתוני הדף. אנא נסה שוב.');
       console.error('Error opening edit modal:', error);
@@ -229,7 +231,7 @@ const Pages = () => {
         cancelButton.click();
       }
 
-      // Reset the form
+      // Reset the form after saving
       resetForm();
     } catch (error) {
       console.error('Error saving page:', error);
@@ -388,7 +390,6 @@ const Pages = () => {
                     />
                   </div>
 
-
                   <div className="mb-3">
                     <label htmlFor="image" className="form-label">תמונה</label>
                     <div className="input-group">
@@ -422,7 +423,7 @@ const Pages = () => {
                               src={imagePreview}
                               alt="תצוגה מקדימה"
                               className="img-thumbnail"
-                              style={{maxHeight: '200px'}}
+                              style={{ maxHeight: '200px' }}
                           />
                         </div>
                     )}
@@ -485,7 +486,8 @@ const Pages = () => {
                 </div>
 
                 <div className="modal-footer">
-                  <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" id="m-cancel">ביטול
+                  <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" id="m-cancel">
+                    ביטול
                   </button>
                   <button type="submit" className="btn btn-primary">
                     {modalMode === 'add' ? 'הוסף דף' : 'שמור שינויים'}
