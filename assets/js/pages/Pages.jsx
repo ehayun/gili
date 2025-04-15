@@ -1,504 +1,331 @@
-import React, { useEffect, useRef, useState } from 'react';
-import axios from 'axios';
+import React, {useEffect, useState} from 'react';
 import HebrewEditor from '../components/HebrewEditor';
 
-const Pages = () => {
+function Pages() {
   const [pages, setPages] = useState([]);
-  const [filteredPages, setFilteredPages] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [currentPage, setCurrentPage] = useState({
-    id: 0,
+  const [menus, setMenus] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+  const [pageForm, setPageForm] = useState({
+    id: null,
     slug: '',
     title: '',
-    imageURL: '',
-    content: '',
     keywords: '',
-    menuID: null,
-    parentID: null
+    menu_id: '',
+    parent_id: '',
+    image_url: '',
+    imageFile: null,
+    content: '',
   });
-  const [menus, setMenus] = useState([]);
-  const [parentPages, setParentPages] = useState([]);
-  const [modalMode, setModalMode] = useState('add'); // 'add' or 'edit'
-  const [imagePreview, setImagePreview] = useState('');
-  const fileInputRef = useRef(null);
-  const modalRef = useRef(null);
 
-  // Fetch pages, menus, and parent pages on component mount
+  // Fetch pages and menus on component mount.
   useEffect(() => {
-    console.log("Pages component mounted");
     fetchPages();
     fetchMenus();
-
-    // Set up Bootstrap modal event listener to reset form on modal hide
-    const pageModal = document.getElementById('pageModal');
-    if (pageModal) {
-      // For testing, comment out the reset to ensure it isn’t wiping our inputs after editing.
-      // pageModal.addEventListener('hidden.bs.modal', resetForm);
-    }
-    return () => {
-      if (pageModal) {
-        // pageModal.removeEventListener('hidden.bs.modal', resetForm);
-      }
-    };
   }, []);
 
   const fetchPages = async () => {
     try {
-      const response = await axios.get('/api/pages');
-      // Extract data from the rows field
-      const pagesData = response.data.rows || [];
-      setPages(pagesData);
-      setFilteredPages(pagesData);
-      setParentPages(pagesData);
+      const response = await fetch('/api/pages');
+      const data = await response.json();
+      // Assumes pages are returned in data.rows; if not, use data directly.
+      setPages(data.rows || data);
     } catch (error) {
       console.error('Error fetching pages:', error);
-      alert('נכשל בטעינת דפים. אנא נסה שוב.');
     }
   };
 
   const fetchMenus = async () => {
     try {
-      const response = await axios.get('/api/menus');
-      // Extract data from the rows field
-      const menusData = response.data || [];
-      setMenus(menusData);
+      const response = await fetch('/api/menus');
+      const data = await response.json();
+      setMenus(data);
     } catch (error) {
       console.error('Error fetching menus:', error);
     }
   };
 
-  const handleSearch = (e) => {
-    const term = e.target.value;
-    setSearchTerm(term);
-
-    if (term.trim() === '') {
-      setFilteredPages(pages);
-    } else {
-      const filtered = pages.filter(
-          page =>
-              page.title.toLowerCase().includes(term.toLowerCase()) ||
-              page.slug.toLowerCase().includes(term.toLowerCase())
-      );
-      setFilteredPages(filtered);
-    }
+  // Open modal with fields filled for edit.
+  const handleOpenModalForEdit = (page) => {
+    setPageForm({
+      id: page.id,
+      slug: page.slug,
+      title: page.title,
+      keywords: page.keywords,
+      menu_id: page.menu ? page.menu.id : '',
+      parent_id: page.parent ? page.parent.id : '',
+      image_url: page.image_url,
+      imageFile: null, // Reset file field
+      content: page.content,
+    });
+    setIsEdit(true);
+    setShowModal(true);
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setCurrentPage({ ...currentPage, [name]: value });
-  };
-
-  const handleContentChange = (content) => {
-    setCurrentPage({ ...currentPage, content });
-  };
-
-  const handleSelectChange = (e) => {
-    const { name, value } = e.target;
-    const numValue = value === '' ? null : parseInt(value, 10);
-    setCurrentPage({ ...currentPage, [name]: numValue });
-  };
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      // Preview the selected image
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const resetForm = () => {
-    setCurrentPage({
-      id: 0,
+  // Open modal with empty fields for create.
+  const handleOpenModalForCreate = () => {
+    setPageForm({
+      id: null,
       slug: '',
       title: '',
-      imageURL: '',
-      content: '',
       keywords: '',
-      menuID: null,
-      parentID: null
+      menu_id: '',
+      parent_id: '',
+      image_url: '',
+      imageFile: null,
+      content: '',
     });
-    setImagePreview('');
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-    setModalMode('add');
+    setIsEdit(false);
+    setShowModal(true);
   };
 
-  const openAddModal = () => {
-    // Reset the form completely before showing the modal for adding a new page.
-    resetForm();
+  const handleCloseModal = () => {
+    setShowModal(false);
   };
 
-  const openEditModal = async (page) => {
+  // Handle changes for text inputs and select dropdowns.
+  const handleChange = (e) => {
+    const {name, value} = e.target;
+    setPageForm({...pageForm, [name]: value});
+  };
+
+  // Handle file input changes.
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    setPageForm({...pageForm, imageFile: file});
+  };
+
+  // Save the page (create or update) using FormData.
+  const handleSave = async () => {
     try {
-      // Do not reset the form immediately here to avoid wiping the title.
-      resetForm();  // Removed to prevent clearing the state during edit mode.
-
-      // Fetch the latest page data
-      const freshPageData = await fetchPageById(page.id);
-
-      // For debugging, override the title with a hardcoded value.
-      // You can remove the hardcoded value once you have verified the problem.
-      setCurrentPage({
-        id: freshPageData.id,
-        slug: freshPageData.slug,
-        title: freshPageData.title,           // Hardcoded for testing
-        imageURL: freshPageData.image_url,  // Map image_url to imageURL
-        content: freshPageData.content,
-        keywords: freshPageData.keywords,
-        menuID: freshPageData.menu_id,      // Map menu_id to menuID
-        parentID: freshPageData.parent_id   // Map parent_id to parentID
+      const formData = new FormData();
+      formData.append('slug', pageForm.slug);
+      formData.append('title', pageForm.title);
+      formData.append('keywords', pageForm.keywords);
+      formData.append('image_url', pageForm.image_url);
+      formData.append('menu_id', pageForm.menu_id);
+      formData.append('parent_id', pageForm.parent_id);
+      formData.append('content', pageForm.content);
+      if (pageForm.imageFile) {
+        formData.append('image', pageForm.imageFile);
+      }
+      console.log('FormData:', pageForm);
+      // If editing, assume PUT to /api/pages/:id; otherwise, POST to /api/pages.
+      let url = '/manager/pages';
+      let method = 'POST';
+      if (isEdit && pageForm.id) {
+        url = `/manager/pages/${pageForm.id}`;
+        method = 'PUT';
+      }
+      const response = await fetch(url, {
+        method,
+        body: formData,
       });
-
-
-      setImagePreview(freshPageData.image_url);
-      setModalMode('edit');
-
-    } catch (error) {
-      alert('שגיאה בטעינת נתוני הדף. אנא נסה שוב.');
-      console.error('Error opening edit modal:', error);
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    try {
-      // Create initial pageData without the image URL
-      const pageData = {
-        id: currentPage.id,
-        slug: currentPage.slug,
-        title: currentPage.title,
-        image_url: currentPage.imageURL, // Use existing imageURL initially
-        content: currentPage.content,
-        keywords: currentPage.keywords,
-        menu_id: currentPage.menuID,
-        parent_id: currentPage.parentID
-      };
-
-      let response;
-      let createdPage;
-
-      // First save the page to get an ID (for new pages)
-      if (modalMode === 'add') {
-        response = await axios.post('/manager/pages', pageData);
-        createdPage = response.data;
+      if (response.ok) {
+        fetchPages();
+        handleCloseModal();
       } else {
-        response = await axios.put(`/manager/pages/${currentPage.id}`, pageData);
-        createdPage = response.data;
+        console.error('Error saving page:', response.statusText);
       }
-
-      // Now that we have a page ID, upload the image if one was selected
-      if (fileInputRef.current && fileInputRef.current.files[0]) {
-        const formData = new FormData();
-        formData.append('image', fileInputRef.current.files[0]);
-        formData.append('pageId', createdPage.id); // Pass the page ID to the upload endpoint
-
-        try {
-          const uploadResponse = await axios.post('/manager/pages/upload', formData, {
-            headers: {
-              'Content-Type': 'multipart/form-data'
-            }
-          });
-
-          // Update the page with the new image URL if upload was successful
-          if (uploadResponse.data && uploadResponse.data.imageUrl) {
-            const updateImageData = {
-              ...pageData,
-              id: createdPage.id,
-              image_url: uploadResponse.data.imageUrl
-            };
-
-            await axios.put(`/api/pages/${createdPage.id}`, updateImageData);
-            console.log('Page image updated:', uploadResponse.data.imageUrl);
-          }
-        } catch (uploadError) {
-          console.error('Error uploading image:', uploadError);
-          alert('הדף נשמר אך העלאת התמונה נכשלה. אנא נסה לערוך את הדף כדי להעלות את התמונה שוב.');
-        }
-      }
-
-      // Refresh the page list
-      fetchPages();
-
-      // Close the modal
-      const cancelButton = document.getElementById("m-cancel");
-      if (cancelButton) {
-        cancelButton.click();
-      }
-
-      // Reset the form after saving
-      resetForm();
     } catch (error) {
       console.error('Error saving page:', error);
-      alert('נכשל בשמירת הדף. אנא נסה שוב.');
     }
   };
 
+  // New delete function to remove a page.
   const handleDelete = async (pageId) => {
-    if (window.confirm('האם אתה בטוח שברצונך למחוק דף זה?')) {
-      try {
-        await axios.delete(`/manager/pages/${pageId}`);
-        fetchPages();
-      } catch (error) {
-        console.error('Error deleting page:', error);
-        alert('נכשל במחיקת הדף. אנא נסה שוב.');
-      }
+    // Optional: Add a confirmation dialog.
+    if (!window.confirm("Are you sure you want to delete this page?")) {
+      return;
     }
-  };
-
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
-  };
-
-  const fetchPageById = async (pageId) => {
     try {
-      const response = await axios.get(`/api/pages/${pageId}`);
-      // Assuming the API returns the page data directly
-      return response.data;
+      const response = await fetch(`/manager/pages/${pageId}`, {
+        method: 'DELETE',
+      });
+      if (response.ok) {
+        // Refresh the pages list after successful deletion.
+        fetchPages();
+      } else {
+        console.error('Error deleting page:', response.statusText);
+      }
     } catch (error) {
-      console.error('Error fetching page details:', error);
-      throw error;
+      console.error('Error deleting page:', error);
     }
   };
 
   return (
-      <div className="container-fluid mt-4">
-        <div className="row mb-4">
-          <div className="col">
-            <h2>ניהול דפים</h2>
-          </div>
-        </div>
+      <div className="container mt-4">
+        <h2>Pages</h2>
+        <button className="btn btn-primary mb-3" onClick={handleOpenModalForCreate}>
+          Add New Page
+        </button>
+        <table className="table table-bordered">
+          <thead>
+          <tr>
+            <th>Title</th>
+            <th>Menu</th>
+            <th>Parent</th>
+            <th>Image</th>
+            <th>Actions</th>
+          </tr>
+          </thead>
+          <tbody>
+          {pages.map((page) => (
+              <tr key={page.id}>
+                <td>{page.title}</td>
+                <td>{page.menu ? page.menu.title : ''}</td>
+                <td>{page.parent ? page.parent.title : ''}</td>
+                <td>
+                  {page.image_url && (
+                      <img src={page.image_url} alt="" style={{width: '60px'}}/>
+                  )}
+                </td>
+                <td>
+                  <button
+                      className="btn btn-sm btn-secondary me-2"
+                      onClick={() => handleOpenModalForEdit(page)}
+                  >
+                    Edit
+                  </button>
+                  {/* New Delete button */}
+                  <button
+                      className="btn btn-sm btn-danger"
+                      onClick={() => handleDelete(page.id)}
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+          ))}
+          </tbody>
+        </table>
 
-        <div className="row mb-4">
-          <div className="col-md-6">
-            <div className="input-group">
-            <span className="input-group-text">
-              <i className="bi bi-search"></i>
-            </span>
-              <input
-                  type="text"
-                  className="form-control"
-                  placeholder="חפש דפים לפי כותרת או נתיב..."
-                  value={searchTerm}
-                  onChange={handleSearch}
-              />
-            </div>
-          </div>
-          <div className="col-md-6 text-end">
-            <button
-                className="btn btn-primary"
-                onClick={openAddModal}
-                data-bs-toggle="modal"
-                data-bs-target="#pageModal"
-            >
-              <i className="bi bi-plus-circle me-1"></i> הוסף דף חדש
-            </button>
-          </div>
-        </div>
-
-        <div className="row">
-          <div className="col">
-            <div className="table-responsive">
-              <table className="table table-striped table-hover">
-                <thead className="table-light">
-                <tr>
-                  <th>כותרת</th>
-                  <th>נתיב</th>
-                  <th>תפריט</th>
-                  <th>דף אב</th>
-                  <th>עודכן בתאריך</th>
-                  <th></th>
-                </tr>
-                </thead>
-                <tbody>
-                {filteredPages.length > 0 ? (
-                    filteredPages.map(page => (
-                        <tr key={page.id}>
-                          <td>{page.title}</td>
-                          <td>{page.slug}</td>
-                          <td>{page.menu ? page.menu.title : '-'}</td>
-                          <td>{page.parent ? page.parent.title : '-'}</td>
-                          <td>{formatDate(page.updated_at)}</td>
-                          <td>
-                            <div className="btn-group">
-                              <button
-                                  className="btn btn-sm btn-outline-primary"
-                                  onClick={() => openEditModal(page).catch(console.error)}
-                                  data-bs-toggle="modal"
-                                  data-bs-target="#pageModal"
-                              >
-                                <i className="bi bi-pencil"></i> ערוך
-                              </button>
-                              <button
-                                  className="btn btn-sm btn-outline-danger"
-                                  onClick={() => handleDelete(page.id)}
-                              >
-                                <i className="bi bi-trash"></i> מחק
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                    ))
-                ) : (
-                    <tr>
-                      <td colSpan="7" className="text-center">
-                        {searchTerm ? 'לא נמצאו דפים התואמים את החיפוש שלך' : 'אין דפים זמינים'}
-                      </td>
-                    </tr>
-                )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        {/* Page Modal - Add/Edit */}
-        <div
-            className="modal fade"
-            id="pageModal"
-            tabIndex="-1"
-            aria-labelledby="pageModalLabel"
-            aria-hidden="true"
-            ref={modalRef}
-        >
-          <div className="modal-dialog modal-lg">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title" id="pageModalLabel">
-                  {modalMode === 'add' ? 'הוסף דף חדש' : 'ערוך דף'}
-                </h5>
-                <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-              </div>
-              <form onSubmit={handleSubmit}>
-                <div className="modal-body">
-                  <div className="mb-3">
-                    <label htmlFor="title" className="form-label">כותרת</label>
-                    <input
-                        type="text"
-                        className="form-control"
-                        id="title"
-                        name="title"
-                        value={currentPage.title}
-                        onChange={handleInputChange}
-                        required
-                    />
+        {/* Modal for create/edit page */}
+        {showModal && (
+            <div className="modal show d-block" tabIndex="-1" role="dialog">
+              <div className="modal-dialog modal-xl" role="document">
+                <div className="modal-content">
+                  <div className="modal-header">
+                    <h5 className="modal-title">{isEdit ? 'Edit Page' : 'Create Page'}</h5>
+                    <button type="button" className="btn-close" onClick={handleCloseModal}></button>
                   </div>
-
-                  <div className="mb-3">
-                    <label htmlFor="image" className="form-label">תמונה</label>
-                    <div className="input-group">
-                      <input
-                          type="file"
-                          className="form-control"
-                          id="image"
-                          name="image"
-                          accept="image/*"
-                          onChange={handleImageChange}
-                          ref={fileInputRef}
-                      />
-                      <label className="input-group-text" htmlFor="image">
-                        <i className="bi bi-upload"></i>
-                      </label>
-                    </div>
-
-                    {/* Image URL field (hidden but maintained for compatibility) */}
-                    <input
-                        type="hidden"
-                        id="imageURL"
-                        name="imageURL"
-                        value={currentPage.imageURL}
-                        onChange={handleInputChange}
-                    />
-
-                    {/* Image preview */}
-                    {imagePreview && (
-                        <div className="mt-2">
-                          <img
-                              src={imagePreview}
-                              alt="תצוגה מקדימה"
-                              className="img-thumbnail"
-                              style={{ maxHeight: '200px' }}
-                          />
+                  <div className="modal-body">
+                    <form>
+                      <div className="mb-3 hidden">
+                        <label className="form-label">Slug</label>
+                        <input
+                            type="text"
+                            className="form-control"
+                            name="slug"
+                            value={pageForm.slug}
+                            onChange={handleChange}
+                        />
+                      </div>
+                      <div className="mb-3">
+                        <label className="form-label">Title</label>
+                        <input
+                            type="text"
+                            className="form-control"
+                            name="title"
+                            value={pageForm.title}
+                            onChange={handleChange}
+                        />
+                      </div>
+                      <div className="mb-3">
+                        <label className="form-label">Content</label>
+                        <HebrewEditor
+                            value={pageForm.content}
+                            onChange={(value) => setPageForm({...pageForm, content: value})}
+                        />
+                      </div>
+                      <div className="mb-3">
+                        <label className="form-label">Keywords</label>
+                        <input
+                            type="text"
+                            className="form-control"
+                            name="keywords"
+                            value={pageForm.keywords}
+                            onChange={handleChange}
+                        />
+                      </div>
+                      <div className="mb-3 col-md-12">
+                        <div className="col-md-6">
+                          <label className="form-label">Menu</label>
+                          <select
+                              className="form-select"
+                              name="menu_id"
+                              value={pageForm.menu_id}
+                              onChange={handleChange}
+                          >
+                            <option value="">Select a menu</option>
+                            {menus.map((menu) => (
+                                <option key={menu.id} value={menu.id}>
+                                  {menu.title}
+                                </option>
+                            ))}
+                          </select>
                         </div>
-                    )}
+                        <div className="col-md-6">
+                          <label className="form-label">Parent Page</label>
+                          <select
+                              className="form-select"
+                              name="parent_id"
+                              value={pageForm.parent_id}
+                              onChange={handleChange}
+                          >
+                            <option value="">None</option>
+                            {pages
+                                // Optionally filter out the current page to avoid self-reference.
+                                .filter((p) => !isEdit || p.id !== pageForm.id)
+                                .map((p) => (
+                                    <option key={p.id} value={p.id}>
+                                      {p.title}
+                                    </option>
+                                ))}
+                          </select>
+                        </div>
+                      </div>
+                      <div className="mb-3">
+                        <label className="form-label">Image Upload</label>
+                        <input
+                            type="file"
+                            className="form-control"
+                            name="image"
+                            onChange={handleFileChange}
+                        />
+                      </div>
+                      {pageForm.image_url && !pageForm.imageFile && (
+                          <div className="mb-3">
+                            <p>Current Image:</p>
+                            <img src={pageForm.image_url} alt="Current" style={{width: '100px'}}/>
+                          </div>
+                      )}
+                      {pageForm.imageFile && (
+                          <div className="mb-3">
+                            <p>Preview:</p>
+                            <img
+                                src={URL.createObjectURL(pageForm.imageFile)}
+                                alt="Preview"
+                                style={{width: '100px'}}
+                            />
+                          </div>
+                      )}
+                    </form>
                   </div>
-
-                  <div className="mb-3">
-                    <label htmlFor="content" className="form-label">תוכן</label>
-                    <HebrewEditor
-                        value={currentPage.content}
-                        onChange={handleContentChange}
-                    />
-                  </div>
-
-                  <div className="mb-3">
-                    <label htmlFor="keywords" className="form-label">מילות מפתח</label>
-                    <input
-                        type="text"
-                        className="form-control"
-                        id="keywords"
-                        name="keywords"
-                        value={currentPage.keywords}
-                        onChange={handleInputChange}
-                    />
-                    <div className="form-text">רשימת מילות מפתח מופרדות בפסיקים עבור SEO</div>
-                  </div>
-
-                  <div className="row">
-                    <div className="col-md-6 mb-3">
-                      <label htmlFor="menuID" className="form-label">תפריט</label>
-                      <select
-                          className="form-select"
-                          id="menuID"
-                          name="menuID"
-                          value={currentPage.menuID || ''}
-                          onChange={handleSelectChange}
-                      >
-                        <option value="">ללא</option>
-                        {menus.map(menu => (
-                            <option key={menu.id} value={menu.id}>{menu.title}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="col-md-6 mb-3">
-                      <label htmlFor="parentID" className="form-label">דף אב</label>
-                      <select
-                          className="form-select"
-                          id="parentID"
-                          name="parentID"
-                          value={currentPage.parentID || ''}
-                          onChange={handleSelectChange}
-                      >
-                        <option value="">ללא</option>
-                        {parentPages.filter(p => p.id !== currentPage.id).map(page => (
-                            <option key={page.id} value={page.id}>{page.title}</option>
-                        ))}
-                      </select>
-                    </div>
+                  <div className="modal-footer">
+                    <button type="button" className="btn btn-secondary" onClick={handleCloseModal}>
+                      Close
+                    </button>
+                    <button type="button" className="btn btn-primary" onClick={handleSave}>
+                      Save changes
+                    </button>
                   </div>
                 </div>
-
-                <div className="modal-footer">
-                  <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" id="m-cancel">
-                    ביטול
-                  </button>
-                  <button type="submit" className="btn btn-primary">
-                    {modalMode === 'add' ? 'הוסף דף' : 'שמור שינויים'}
-                  </button>
-                </div>
-              </form>
+              </div>
             </div>
-          </div>
-        </div>
+        )}
       </div>
   );
-};
+}
 
 export default Pages;
