@@ -15,24 +15,26 @@
   <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-3">
     {{range .pages}}
     <div class="col">
-      <div class="p-3 border bg-light">
-        <div class="card">
-          <div class="card-header">
-            {{if ne .ImageURL ""}}
-            <div class="ratio ratio-16x9">
-              <img src="{{.ImageURL}}" class="card-img-top object-fit-cover rounded-top" alt="{{.Title}}">
+      <a href="/pages/{{.ID}}">
+        <div class="p-3 border bg-light">
+          <div class="card">
+            <div class="card-header">
+              {{if ne .ImageURL ""}}
+              <div class="ratio ratio-16x9">
+                <img src="{{.ImageURL}}" class="card-img-top object-fit-cover rounded-top" alt="{{.Title}}">
+              </div>
+              {{end}}
             </div>
-            {{end}}
-          </div>
-          <div class="card-body">
-            <h5 class="card-title">{{.Title}}</h5>
-            <p class="card-text">
-              {{safe .Content 300}}
-            </p>
-            <a href="/pages/{{.ID}}" class="btn btn-primary">{{_ "Continue"}}</a>
+            <div class="card-body">
+              <h5 class="card-title">{{.Title}}</h5>
+              <p class="card-text">
+                {{safe .Content 300}}
+              </p>
+              <a href="/pages/{{.ID}}" class="btn btn-primary">{{_ "Continue"}}</a>
+            </div>
           </div>
         </div>
-      </div>
+      </a>
     </div>
     {{end}}
   </div>

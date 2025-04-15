@@ -366,7 +366,7 @@ func safe(s string, leng ...int) template.HTML {
 	if s == "" {
 		return ""
 	}
-	s = strings.Replace(s, "\n", "<br>", -1)
+	//s = strings.Replace(s, "\n", "<br>", -1)
 	if len(leng) > 0 {
 		s = truncateSafe(s, leng[0])
 	}

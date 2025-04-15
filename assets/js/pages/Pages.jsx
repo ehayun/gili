@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import HebrewEditor from '../components/HebrewEditor';
 
 function Pages() {
@@ -6,6 +6,7 @@ function Pages() {
   const [menus, setMenus] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
+  const [searchTerm, setSearchTerm] = useState(""); // new state for search
   const [pageForm, setPageForm] = useState({
     id: null,
     slug: '',
@@ -85,14 +86,14 @@ function Pages() {
 
   // Handle changes for text inputs and select dropdowns.
   const handleChange = (e) => {
-    const {name, value} = e.target;
-    setPageForm({...pageForm, [name]: value});
+    const { name, value } = e.target;
+    setPageForm({ ...pageForm, [name]: value });
   };
 
   // Handle file input changes.
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    setPageForm({...pageForm, imageFile: file});
+    setPageForm({ ...pageForm, imageFile: file });
   };
 
   // Save the page (create or update) using FormData.
@@ -135,7 +136,7 @@ function Pages() {
   // New delete function to remove a page.
   const handleDelete = async (pageId) => {
     // Optional: Add a confirmation dialog.
-    if (!window.confirm("Are you sure you want to delete this page?")) {
+    if (!window.confirm("האם אתה בטוח שברצונך למחוק את הדף הזה?")) {
       return;
     }
     try {
@@ -153,46 +154,62 @@ function Pages() {
     }
   };
 
+  // Filter pages based on search term.
+  const filteredPages = pages.filter((page) =>
+      page.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
       <div className="container mt-4">
-        <h2>Pages</h2>
-        <button className="btn btn-primary mb-3" onClick={handleOpenModalForCreate}>
-          Add New Page
-        </button>
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <h2 className="mb-0">עמודים</h2>
+          <div className="d-flex align-items-center">
+            <input
+                type="text"
+                className="form-control me-2"
+                style={{ width: "200px" }}
+                placeholder="חיפוש"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <button className="btn btn-primary" onClick={handleOpenModalForCreate}>
+              צור חדש
+            </button>
+          </div>
+        </div>
         <table className="table table-bordered">
           <thead>
           <tr>
-            <th>Title</th>
-            <th>Menu</th>
-            <th>Parent</th>
-            <th>Image</th>
-            <th>Actions</th>
+            <th>כותרת</th>
+            <th>תפריט</th>
+            <th>דף אב</th>
+            <th>תמונה</th>
+            <th>פעולות</th>
           </tr>
           </thead>
           <tbody>
-          {pages.map((page) => (
+          {filteredPages.map((page) => (
               <tr key={page.id}>
                 <td>{page.title}</td>
                 <td>{page.menu ? page.menu.title : ''}</td>
                 <td>{page.parent ? page.parent.title : ''}</td>
                 <td>
                   {page.image_url && (
-                      <img src={page.image_url} alt="" style={{width: '60px'}}/>
+                      <img src={page.image_url} alt="" style={{ width: '40px' }} />
                   )}
                 </td>
                 <td>
                   <button
-                      className="btn btn-sm btn-secondary me-2"
+                      className="btn btn-sm btn-primary me-2"
                       onClick={() => handleOpenModalForEdit(page)}
                   >
-                    Edit
+                    עריכה
                   </button>
-                  {/* New Delete button */}
                   <button
                       className="btn btn-sm btn-danger"
                       onClick={() => handleDelete(page.id)}
                   >
-                    Delete
+                    מחיקה
                   </button>
                 </td>
               </tr>
@@ -206,13 +223,13 @@ function Pages() {
               <div className="modal-dialog modal-xl" role="document">
                 <div className="modal-content">
                   <div className="modal-header">
-                    <h5 className="modal-title">{isEdit ? 'Edit Page' : 'Create Page'}</h5>
+                    <h5 className="modal-title">{isEdit ? 'ערוך דף' : 'צור דף'}</h5>
                     <button type="button" className="btn-close" onClick={handleCloseModal}></button>
                   </div>
                   <div className="modal-body">
                     <form>
                       <div className="mb-3 hidden">
-                        <label className="form-label">Slug</label>
+                        <label className="form-label">כתובת</label>
                         <input
                             type="text"
                             className="form-control"
@@ -222,7 +239,7 @@ function Pages() {
                         />
                       </div>
                       <div className="mb-3">
-                        <label className="form-label">Title</label>
+                        <label className="form-label">כותרת</label>
                         <input
                             type="text"
                             className="form-control"
@@ -232,14 +249,14 @@ function Pages() {
                         />
                       </div>
                       <div className="mb-3">
-                        <label className="form-label">Content</label>
+                        <label className="form-label">תוכן</label>
                         <HebrewEditor
                             value={pageForm.content}
-                            onChange={(value) => setPageForm({...pageForm, content: value})}
+                            onChange={(value) => setPageForm({ ...pageForm, content: value })}
                         />
                       </div>
                       <div className="mb-3">
-                        <label className="form-label">Keywords</label>
+                        <label className="form-label">מילות מפתח</label>
                         <input
                             type="text"
                             className="form-control"
@@ -248,16 +265,17 @@ function Pages() {
                             onChange={handleChange}
                         />
                       </div>
-                      <div className="mb-3 col-md-12">
+                      {/* New row for Menu and Parent fields */}
+                      <div className="mb-3 row">
                         <div className="col-md-6">
-                          <label className="form-label">Menu</label>
+                          <label className="form-label">תפריט</label>
                           <select
                               className="form-select"
                               name="menu_id"
                               value={pageForm.menu_id}
                               onChange={handleChange}
                           >
-                            <option value="">Select a menu</option>
+                            <option value="">בחר תפריט</option>
                             {menus.map((menu) => (
                                 <option key={menu.id} value={menu.id}>
                                   {menu.title}
@@ -266,16 +284,15 @@ function Pages() {
                           </select>
                         </div>
                         <div className="col-md-6">
-                          <label className="form-label">Parent Page</label>
+                          <label className="form-label">דף אב</label>
                           <select
                               className="form-select"
                               name="parent_id"
                               value={pageForm.parent_id}
                               onChange={handleChange}
                           >
-                            <option value="">None</option>
+                            <option value="">ללא</option>
                             {pages
-                                // Optionally filter out the current page to avoid self-reference.
                                 .filter((p) => !isEdit || p.id !== pageForm.id)
                                 .map((p) => (
                                     <option key={p.id} value={p.id}>
@@ -286,7 +303,7 @@ function Pages() {
                         </div>
                       </div>
                       <div className="mb-3">
-                        <label className="form-label">Image Upload</label>
+                        <label className="form-label">העלאת תמונה</label>
                         <input
                             type="file"
                             className="form-control"
@@ -296,17 +313,17 @@ function Pages() {
                       </div>
                       {pageForm.image_url && !pageForm.imageFile && (
                           <div className="mb-3">
-                            <p>Current Image:</p>
-                            <img src={pageForm.image_url} alt="Current" style={{width: '100px'}}/>
+                            <p>תמונה נוכחית:</p>
+                            <img src={pageForm.image_url} alt="Current" style={{ width: '100px' }} />
                           </div>
                       )}
                       {pageForm.imageFile && (
                           <div className="mb-3">
-                            <p>Preview:</p>
+                            <p>תצוגה מקדימה:</p>
                             <img
                                 src={URL.createObjectURL(pageForm.imageFile)}
                                 alt="Preview"
-                                style={{width: '100px'}}
+                                style={{ width: '100px' }}
                             />
                           </div>
                       )}
@@ -314,10 +331,10 @@ function Pages() {
                   </div>
                   <div className="modal-footer">
                     <button type="button" className="btn btn-secondary" onClick={handleCloseModal}>
-                      Close
+                      סגור
                     </button>
                     <button type="button" className="btn btn-primary" onClick={handleSave}>
-                      Save changes
+                      שמירת שינויים
                     </button>
                   </div>
                 </div>
