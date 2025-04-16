@@ -1,266 +1,336 @@
-import React, { useState, useEffect } from 'react';
-import { Card, Button, Table, Form, Modal, Image } from 'react-bootstrap';
-import axios from 'axios';
+import React, {useEffect, useState} from "react";
 import HebrewEditor from "../components/HebrewEditor";
 
+const initialCarouselState = {
+  id: null,
+  title: "",
+  image_url: "",
+  content: "",
+  order_num: 0,
+};
+
 const Carousels = () => {
-    const [carousels, setCarousels] = useState([]);
-    const [showModal, setShowModal] = useState(false);
-    const [currentCarousel, setCurrentCarousel] = useState({
-        id: 0,
-        title: '',
-        image_url: '',
-        content: '',
-        order_num: 0
-    });
-    const [file, setFile] = useState(null);
-    const [isEditing, setIsEditing] = useState(false);
-    const [loading, setLoading] = useState(true);
+  const [carousels, setCarousels] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [formData, setFormData] = useState(initialCarouselState);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  // Stores the file chosen by the user from the local drive
+  const [uploadFile, setUploadFile] = useState(null);
+  // Image preview URL (comes from the image_url field or generated from a local file)
+  const [previewImage, setPreviewImage] = useState("");
 
-    useEffect(() => {
-        fetchCarousels();
-    }, []);
+  // Fetch carousels from /api/carousels (assumes an array or an object with a "rows" property)
+  const fetchCarousels = async () => {
+    try {
+      const res = await fetch("/api/carousels");
+      const data = await res.json();
+      setCarousels(Array.isArray(data) ? data : data.rows || []);
+    } catch (error) {
+      console.error("Error fetching carousels:", error);
+    }
+  };
 
-    const fetchCarousels = async () => {
-        try {
-            setLoading(true);
-            const response = await axios.get('/api/carousels');
-            setCarousels(response.data || []);
-            setLoading(false);
-        } catch (error) {
-            console.error('שגיאה בטעינת קרוסלות:', error);
-            setLoading(false);
+  // Load carousels on mount
+  useEffect(() => {
+    fetchCarousels();
+  }, []);
+
+  // When a URL is provided (and no file is chosen) update the preview image
+  useEffect(() => {
+    if (formData.image_url && !uploadFile) {
+      setPreviewImage(formData.image_url);
+    }
+  }, [formData.image_url, uploadFile]);
+
+  // File input change handler: store the file and generate a preview URL
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setUploadFile(file);
+      const objectUrl = URL.createObjectURL(file);
+      setPreviewImage(objectUrl);
+    }
+  };
+
+  // Open modal for creating a new carousel item: reset form and preview
+  const openCreateModal = () => {
+    setFormData(initialCarouselState);
+    setUploadFile(null);
+    setPreviewImage("");
+    setShowModal(true);
+  };
+
+  // Open modal for editing an existing carousel item
+  const openEditModal = (item) => {
+    setFormData(item);
+    setUploadFile(null);
+    setPreviewImage(item.image_url || "");
+    setShowModal(true);
+  };
+
+  // Handle text input changes for any field
+  const handleInputChange = (e) => {
+    const {name, value} = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  // Handle content updates from the HebrewEditor (rich text editor)
+  const handleContentChange = (content) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      content: content,
+    }));
+  };
+
+  // Submit handler: if a file is provided, send all data in a single FormData request.
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      let method = formData.id ? "PUT" : "POST";
+      let url = formData.id ? `/api/carousels/${formData.id}` : "/api/carousels";
+
+      // If a file is selected, create a FormData object with all the fields.
+      if (uploadFile) {
+        const fd = new FormData();
+        fd.append("title", formData.title);
+        fd.append("image_url", formData.image_url); // optional text URL if provided
+        fd.append("content", formData.content);
+        fd.append("order_num", formData.order_num);
+        // Append the file under "image"
+        fd.append("image", uploadFile);
+        if (formData.id) {
+          fd.append("id", formData.id);
         }
-    };
-
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setCurrentCarousel(prev => ({ ...prev, [name]: value }));
-    };
-
-    const handleContentChange = (content) => {
-        setCurrentCarousel(prev => ({ ...prev, content }));
-    };
-
-    const handleFileChange = (e) => {
-        setFile(e.target.files[0]);
-    };
-
-    const resetForm = () => {
-        setCurrentCarousel({
-            id: 0,
-            title: '',
-            image_url: '',
-            content: '',
-            order_num: 0
+        const res = await fetch(url, {
+          method,
+          body: fd,
+          // The browser will set the appropriate Content-Type boundary for multipart/form-data
         });
-        setFile(null);
-        setIsEditing(false);
-    };
+        if (!res.ok) throw new Error("Network response was not ok");
+      } else {
+        // Otherwise send a JSON payload
+        const res = await fetch(url, {
+          method,
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        });
+        if (!res.ok) throw new Error("Network response was not ok");
+      }
 
-    const handleCloseModal = () => {
-        setShowModal(false);
-        resetForm();
-    };
+      // Refresh the list and close the modal
+      await fetchCarousels();
+      setShowModal(false);
+    } catch (error) {
+      console.error("Error saving carousel:", error);
+    } finally {
+      setIsSubmitting(false);
+      setUploadFile(null);
+    }
+  };
 
-    const handleShowModal = (carousel = null) => {
-        if (carousel) {
-            setCurrentCarousel(carousel);
-            setIsEditing(true);
-        } else {
-            resetForm();
-        }
-        setShowModal(true);
-    };
+  // Delete a carousel given its id
+  const handleDelete = async (id) => {
+    if (!window.confirm("האם אתה בטוח שברצונך למחוק את הקרוסלה?")) return;
+    try {
+      const res = await fetch(`/api/carousels/${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Delete failed");
+      await fetchCarousels();
+    } catch (error) {
+      console.error("Error deleting carousel:", error);
+    }
+  };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+  return (
+      <div className="container mt-4">
 
-        try {
-            const formData = new FormData();
+        {/* Carousels List */}
+        <table className="table table-striped">
+          <thead>
+          <tr>
+            <th>כותרת</th>
+            <th>תמונה</th>
+            <th>סדר</th>
+            <th>
+              <button className="btn btn-primary btn-sm" onClick={openCreateModal}>
+                הוסף קרוסלה
+              </button>
+            </th>
+          </tr>
+          </thead>
+          <tbody>
+          {carousels.map((item) => (
+              <tr key={item.id}>
+                <td>{item.title}</td>
+                <td>
+                  {item.image_url ? (
+                      <img
+                          src={item.image_url}
+                          alt={item.title}
+                          style={{width: "60px"}}
+                          className="img-thumbnail"
+                      />
+                  ) : (
+                      "אין תמונה"
+                  )}
+                </td>
+                <td>{item.order_num}</td>
+                <td>
+                  <button
+                      className="btn btn-sm btn-secondary me-2"
+                      onClick={() => openEditModal(item)}
+                  >
+                    ערוך
+                  </button>
+                  <button
+                      className="btn btn-sm btn-danger"
+                      onClick={() => handleDelete(item.id)}
+                  >
+                    מחק
+                  </button>
+                </td>
+              </tr>
+          ))}
+          {carousels.length === 0 && (
+              <tr>
+                <td colSpan="4" className="text-center">
+                  אין קרוסלות זמינות.
+                </td>
+              </tr>
+          )}
+          </tbody>
+        </table>
 
-            currentCarousel.order_num = Number(currentCarousel.order_num);
-            // הוספת נתוני קרוסלה לטופס
-            Object.keys(currentCarousel).forEach(key => {
-                formData.append(key, currentCarousel[key]);
-            });
-
-            // הוספת קובץ אם קיים
-            if (file) {
-                formData.append('image', file);
-            }
-
-            if (isEditing) {
-                await axios.put(`/api/carousels/${currentCarousel.id}`, formData, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    }
-                });
-            } else {
-                await axios.post('/api/carousels', formData, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    }
-                });
-            }
-
-            fetchCarousels();
-            handleCloseModal();
-        } catch (error) {
-            console.error('שגיאה בשמירת קרוסלה:', error);
-        }
-    };
-
-    const handleDelete = async (id) => {
-        if (window.confirm('האם אתה בטוח שברצונך למחוק קרוסלה זו?')) {
-            try {
-                await axios.delete(`/api/carousels/${id}`);
-                fetchCarousels();
-            } catch (error) {
-                console.error('שגיאה במחיקת קרוסלה:', error);
-            }
-        }
-    };
-
-    return (
-        <div className="container mt-4" dir="rtl">
-            <Card>
-                <Card.Header className="d-flex justify-content-between align-items-center">
-                    <h3>ניהול קרוסלות</h3>
-                    <Button variant="primary" onClick={() => handleShowModal()}>
-                        הוסף קרוסלה חדשה
-                    </Button>
-                </Card.Header>
-                <Card.Body>
-                    {loading ? (
-                        <div className="text-center p-4">טוען...</div>
-                    ) : (
-                        <Table striped bordered hover responsive>
-                            <thead>
-                            <tr>
-                                <th>כותרת</th>
-                                <th>תמונה</th>
-                                <th>סדר</th>
-                                <th></th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {carousels.length === 0 ? (
-                                <tr>
-                                    <td colSpan="5" className="text-center">לא נמצאו קרוסלות</td>
-                                </tr>
-                            ) : (
-                                carousels.map((carousel) => (
-                                    <tr key={carousel.id}>
-                                        <td>{carousel.title}</td>
-                                        <td>
-                                            {carousel.image_url && (
-                                                <Image
-                                                    src={carousel.image_url}
-                                                    alt={carousel.title}
-                                                    style={{ width: '100px', height: '50px', objectFit: 'cover' }}
-                                                    thumbnail
-                                                />
-                                            )}
-                                        </td>
-                                        <td>{carousel.order_num}</td>
-                                        <td>
-                                            <Button
-                                                variant="info"
-                                                size="sm"
-                                                className="ms-2"
-                                                onClick={() => handleShowModal(carousel)}
-                                            >
-                                                ערוך
-                                            </Button>
-                                            <Button
-                                                variant="danger"
-                                                size="sm"
-                                                onClick={() => handleDelete(carousel.id)}
-                                            >
-                                                מחק
-                                            </Button>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                            </tbody>
-                        </Table>
-                    )}
-                </Card.Body>
-            </Card>
-
-            {/* מודל יצירה/עריכה */}
-            <Modal show={showModal} onHide={handleCloseModal} size="lg">
-                <Modal.Header closeButton>
-                    <Modal.Title>{isEditing ? 'ערוך קרוסלה' : 'הוסף קרוסלה חדשה'}</Modal.Title>
-                </Modal.Header>
-                <Form onSubmit={handleSubmit} dir="rtl">
-                    <Modal.Body>
-                        <Form.Group className="mb-3">
-                            <Form.Label>כותרת</Form.Label>
-                            <Form.Control
-                                type="text"
-                                name="title"
-                                value={currentCarousel.title}
-                                onChange={handleInputChange}
-                                required
-                            />
-                        </Form.Group>
-
-                        <Form.Group className="mb-3">
-                            <Form.Label>מספר סדר</Form.Label>
-                            <Form.Control
+        {/* Bootstrap 5 Modal for create/update */}
+        {showModal && (
+            <>
+              <div className="modal show fade" style={{display: "block"}}>
+                <div className="modal-dialog modal-lg">
+                  <div className="modal-content">
+                    <form onSubmit={handleSubmit}>
+                      <div className="modal-header">
+                        <h5 className="modal-title">
+                          {formData.id ? "ערוך קרוסלה" : "הוסף קרוסלה"}
+                        </h5>
+                        <button
+                            type="button"
+                            className="btn-close"
+                            onClick={() => setShowModal(false)}
+                        ></button>
+                      </div>
+                      <div className="modal-body">
+                        <div className="row">
+                          <div className="col-md-10 mb-3">
+                        {/* Title Input */}
+                          <label className="form-label">כותרת</label>
+                          <input
+                              type="text"
+                              className="form-control"
+                              name="title"
+                              value={formData.title}
+                              onChange={handleInputChange}
+                              required
+                          />
+                        </div>
+                          {/* Order Number */}
+                          <div className="col-md-2 mb-3">
+                            <label className="form-label">סדר</label>
+                            <input
                                 type="number"
+                                className="form-control"
                                 name="order_num"
-                                value={currentCarousel.order_num}
+                                value={formData.order_num}
                                 onChange={handleInputChange}
-                                required
                             />
-                        </Form.Group>
+                          </div>
+                        </div>
 
-                        <Form.Group className="mb-3">
-                            <Form.Label>תמונה</Form.Label>
-                            {currentCarousel.image_url && (
-                                <div className="mb-2">
-                                    <Image
-                                        src={currentCarousel.image_url}
-                                        alt={currentCarousel.title}
-                                        style={{ maxWidth: '200px', maxHeight: '100px' }}
-                                        thumbnail
-                                    />
-                                </div>
-                            )}
-                            <Form.Control
+                        {/* Image URL Input */}
+                        <div className="mb-3 hidden">
+                          <label className="form-label">קישור לתמונה</label>
+                          <input
+                              type="text"
+                              className="form-control"
+                              name="image_url"
+                              value={formData.image_url}
+                              onChange={handleInputChange}
+                          />
+                        </div>
+
+                        <div className="row">
+                          <div className="col-md-6 mb-3">
+                          {/* File Upload Input */}
+                            <label className="form-label">העלה תמונה</label>
+                            <input
                                 type="file"
-                                onChange={handleFileChange}
+                                className="form-control"
                                 accept="image/*"
+                                onChange={handleFileChange}
                             />
-                            <Form.Text className="text-muted">
-                                {isEditing ? 'העלה תמונה חדשה כדי להחליף את הקיימת' : 'בחר תמונה עבור הקרוסלה'}
-                            </Form.Text>
-                        </Form.Group>
+                          </div>
 
-                        <Form.Group className="mb-3">
-                            <Form.Label>תוכן</Form.Label>
-                            <HebrewEditor
-                                value={currentCarousel.content}
-                                onChange={handleContentChange}
-                            />
-                        </Form.Group>
-                    </Modal.Body>
-                    <Modal.Footer>
-                        <Button variant="secondary" onClick={handleCloseModal}>
-                            ביטול
-                        </Button>
-                        <Button variant="primary" type="submit">
-                            {isEditing ? 'עדכן' : 'צור'}
-                        </Button>
-                    </Modal.Footer>
-                </Form>
-            </Modal>
-        </div>
-    );
+                          {/* Image Preview */}
+                          <div className="col-md-6  mb-3">
+                            {previewImage ? (
+                                <img
+                                    src={previewImage}
+                                    alt={formData.title || "תצוגה"}
+                                    style={{maxWidth: "100px", height: "auto"}}
+                                    className="img-thumbnail"
+                                />
+                            ) : (
+                                <p className="text-muted">אין תצוגה מקדימה לתמונה</p>
+                            )}
+                          </div>
+                        </div>
+
+
+
+                        {/* Content Editor */}
+                        <div className="mb-3">
+                          <label className="form-label">תוכן</label>
+                          <HebrewEditor
+                              value={formData.content}
+                              onChange={handleContentChange}
+                          />
+                        </div>
+                      </div>
+                      <div className="modal-footer">
+                        <button
+                            type="button"
+                            className="btn btn-secondary"
+                            onClick={() => setShowModal(false)}
+                        >
+                          סגור
+                        </button>
+                        <button
+                            type="submit"
+                            className="btn btn-primary"
+                            disabled={isSubmitting}
+                        >
+                          {isSubmitting ? "שומר..." : "שמור"}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+              {/* Modal backdrop */}
+              <div
+                  className="modal-backdrop fade show"
+                  onClick={() => setShowModal(false)}
+              ></div>
+            </>
+        )}
+      </div>
+  );
 };
 
 export default Carousels;

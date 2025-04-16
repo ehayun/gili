@@ -1,522 +1,383 @@
-import React, { useState, useEffect, useRef } from 'react';
-import HebrewEditor from '../components/HebrewEditor';
-import Select from 'react-select';
+import React, {useEffect, useState} from "react";
+import Select from "react-select";
+import HebrewEditor from "../components/HebrewEditor";
+
+// Define an initial empty card state
+const initialCardState = {
+  id: null,
+  title: "",
+  image_url: "",
+  menu_id: null,
+  content: "",
+  order_num: 0,
+};
 
 const Cards = () => {
-    // Use refs to track form elements
-    const formRef = useRef(null);
-    const [cards, setCards] = useState([]);
-    const [menus, setMenus] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
-    const [search, setSearch] = useState('');
-    const [editingCard, setEditingCard] = useState(null);
-    const [formData, setFormData] = useState({
-        id: 0,
-        title: '',
-        content: '',
-        image_url: '',
-        order_num: 0,
-        menu_id: null
-    });
-    const [selectedFile, setSelectedFile] = useState(null);
+  const [cards, setCards] = useState([]);
+  const [menus, setMenus] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [formData, setFormData] = useState(initialCardState);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  // Stores the file chosen from the local drive
+  const [uploadFile, setUploadFile] = useState(null);
+  // Preview image URL (either from text input or generated from file)
+  const [previewImage, setPreviewImage] = useState("");
 
-    // Fetch cards data
-    const fetchCards = async (page = 1, searchTerm = '') => {
-        setLoading(true);
-        try {
-            const response = await fetch(`/api/cards?page=${page}&search=${searchTerm}`);
-            if (!response.ok) {
-                throw new Error('נכשל בהבאת הכרטיסים');
-            }
-            const data = await response.json();
-            setCards(data.rows || []);
-            setTotalPages(data.total_pages || 1);
-            setCurrentPage(data.page || 1);
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    // Fetch menus for the dropdown
-    const fetchMenus = async () => {
-        try {
-            const response = await fetch('/api/menus');
-            if (!response.ok) {
-                throw new Error('נכשל בהבאת התפריטים');
-            }
-            const data = await response.json();
-            const menuOptions = data.map(menu => ({
-                value: menu.id,
-                label: menu.title
-            }));
-            setMenus(menuOptions);
-        } catch (err) {
-            setError(err.message);
-        }
-    };
-
-    useEffect(() => {
-        fetchCards(currentPage, search);
-        fetchMenus();
-    }, [currentPage, search]);
-
-    // Add this effect to reset form when editingCard is null
-    useEffect(() => {
-        if (editingCard === null) {
-            resetForm();
-        }
-    }, [editingCard]);
-
-    // Function to completely reset the form
-    const resetForm = () => {
-        // Reset the form element first
-        if (formRef.current) {
-            formRef.current.reset();
-        }
-
-        // Then reset all state
-        setFormData({
-            id: 0,
-            title: '',
-            content: '',
-            image_url: '',
-            order_num: 0,
-            menu_id: null
-        });
-        setSelectedFile(null);
-    };
-
-    // Handle form input changes
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
-    };
-
-    // Handle menu selection
-    const handleMenuChange = (selectedOption) => {
-        setFormData({ ...formData, menu_id: selectedOption ? selectedOption.value : null });
-    };
-
-    // Handle rich text editor content changes
-    const handleEditorChange = (content) => {
-        setFormData({ ...formData, content });
-    };
-
-    // Handle file selection
-    const handleFileChange = (e) => {
-        if (e.target.files && e.target.files.length > 0) {
-            const file = e.target.files[0];
-            setSelectedFile(file);
-
-            // Update preview with the new file
-            const objectUrl = URL.createObjectURL(file);
-            setFormData(prev => ({ ...prev, image_url: objectUrl }));
-        } else {
-            // If the file input is cleared, also clear the preview
-            setSelectedFile(null);
-            setFormData(prev => ({ ...prev, image_url: editingCard?.image_url || '' }));
-        }
-    };
-
-    // Submit form for creating/updating card
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            // Validate form data before submission
-            if (!formData.title.trim()) {
-                setError("כותרת היא שדה חובה");
-                return;
-            }
-
-            // Create a FormData object
-            const multipartFormData = new FormData();
-
-            // Ensure order_num is a number
-            const orderNum = Number(formData.order_num);
-            const menuId  = Number(formData.menu_id);
-
-            // Add all form fields to FormData
-            multipartFormData.append('id', Number(formData.id || 0));
-            multipartFormData.append('title', formData.title.trim());
-            multipartFormData.append('content', formData.content || '');
-            multipartFormData.append('order_num', orderNum);
-            multipartFormData.append('menu_id', menuId);
-
-            // Add menu_id to FormData
-            if (formData.menu_id !== null) {
-                multipartFormData.append('menu_id', Number(formData.menu_id));
-            }
-
-            // If there's a selected file, append it to FormData
-            if (selectedFile) {
-                multipartFormData.append('image', selectedFile);
-            } else if (formData.image_url && !formData.image_url.startsWith('blob:')) {
-                // Keep existing image if no new file was selected
-                multipartFormData.append('image_url', formData.image_url);
-            }
-
-            const url = editingCard ? `/api/cards/${editingCard.id}` : '/api/cards';
-            const method = editingCard ? 'PUT' : 'POST';
-
-            const response = await fetch(url, {
-                method,
-                body: multipartFormData,
-                // Don't set Content-Type header - the browser will set it automatically with the boundary
-            });
-
-            if (!response.ok) {
-                throw new Error(`נכשל ב${editingCard ? 'עדכון' : 'יצירת'} הכרטיס`);
-            }
-
-            // Reset form and state
-            resetForm();
-
-            // Clear editing state
-            setEditingCard(null);
-
-            // Refresh data
-            fetchCards(currentPage, search);
-        } catch (err) {
-            setError(err.message);
-        }
-    };
-
-    // Edit card
-    const handleEdit = (card) => {
-        // First clear any previous state to avoid data persistence issues
-        resetForm();
-
-        // Use setTimeout to ensure state has been cleared before setting new values
-        setTimeout(() => {
-            setEditingCard(card);
-            setFormData({
-                id: card.id,
-                title: card.title || '',
-                content: card.content || '',
-                image_url: card.image_url || '',
-                order_num: Number(card.order_num) || 0,
-                menu_id: card.menu_id || null
-            });
-        }, 10);
-    };
-
-    // Delete card
-    const handleDelete = async (id) => {
-        if (!window.confirm('האם אתה בטוח שברצונך למחוק כרטיס זה?')) return;
-
-        try {
-            const response = await fetch(`/api/cards/${id}`, {
-                method: 'DELETE',
-            });
-
-            if (!response.ok) {
-                throw new Error('נכשל במחיקת הכרטיס');
-            }
-
-            fetchCards(currentPage, search);
-        } catch (err) {
-            setError(err.message);
-        }
-    };
-
-    // Move card up/down in order
-    const handleReorder = async (id, direction) => {
-        const card = cards.find(c => c.id === id);
-        if (!card) return;
-
-        const newOrderNum = card.order_num + (direction === 'up' ? -1 : 1);
-
-        try {
-            // Create FormData for reordering
-            const reorderFormData = new FormData();
-            reorderFormData.append('id', Number(card.id));
-            reorderFormData.append('title', card.title);
-            reorderFormData.append('content', card.content);
-            reorderFormData.append('order_num', Number(newOrderNum));
-            if (card.menu_id) {
-                reorderFormData.append('menu_id', Number(card.menu_id));
-            }
-            if (card.image_url) {
-                reorderFormData.append('image_url', card.image_url);
-            }
-
-            const response = await fetch(`/api/cards/${id}`, {
-                method: 'PUT',
-                body: reorderFormData,
-            });
-
-            if (!response.ok) {
-                throw new Error('נכשל בעדכון סדר הכרטיסים');
-            }
-
-            fetchCards(currentPage, search);
-        } catch (err) {
-            setError(err.message);
-        }
-    };
-
-    // Cancel editing
-    const handleCancel = () => {
-        setEditingCard(null);
-        // resetForm() will be called by the useEffect when editingCard changes to null
-    };
-
-    // Create HTML from content
-    const createMarkup = (htmlContent) => {
-        return { __html: htmlContent };
-    };
-
-    // Find menu name by ID for display in the table
-    const getMenuNameById = (menuId) => {
-        const menu = menus.find(m => m.value === menuId);
-        return menu ? menu.label : '';
-    };
-
-    if (loading && cards.length === 0) {
-        return <div className="d-flex justify-content-center my-5"><div className="spinner-border" role="status"></div></div>;
+  // Fetch menus from /api/menus
+  const fetchMenus = async () => {
+    try {
+      const res = await fetch("/api/menus");
+      const data = await res.json();
+      setMenus(data); // assuming data is an array of menus
+    } catch (error) {
+      console.error("Error fetching menus:", error);
     }
+  };
 
-    return (
-        <div className="container my-4">
-            {error && (
-                <div className="alert alert-danger alert-dismissible fade show" role="alert">
-                    {error}
-                    <button type="button" className="btn-close" onClick={() => setError(null)} aria-label="סגור"></button>
-                </div>
-            )}
+  // Fetch cards from /api/cards and extract the rows property
+  const fetchCards = async () => {
+    try {
+      const res = await fetch("/api/cards");
+      const data = await res.json();
+      setCards(data.rows || []);
+    } catch (error) {
+      console.error("Error fetching cards:", error);
+    }
+  };
 
-            <div className="row">
-                <div className="col-md-4">
-                    <div className="card mb-4">
-                        <div className="card-header bg-primary text-white">
-                            {editingCard ? 'עריכת כרטיס' : 'הוספת כרטיס חדש'}
+  // Initialize menus and cards on mount
+  useEffect(() => {
+    fetchMenus();
+    fetchCards();
+  }, []);
+
+  // Update preview from image_url if no file is chosen
+  useEffect(() => {
+    if (formData.image_url && !uploadFile) {
+      setPreviewImage(formData.image_url);
+    }
+  }, [formData.image_url, uploadFile]);
+
+  // Handle file input change: store the file and update the preview URL
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setUploadFile(file);
+      const objectUrl = URL.createObjectURL(file);
+      setPreviewImage(objectUrl);
+    }
+  };
+
+  // Open modal for creating a new card: reset form state and preview
+  const openCreateModal = () => {
+    setFormData(initialCardState);
+    setUploadFile(null);
+    setPreviewImage("");
+    setShowModal(true);
+  };
+
+  // Open modal for editing an existing card: populate formData and preview
+  const openEditModal = (card) => {
+    setFormData(card);
+    setUploadFile(null);
+    setPreviewImage(card.image_url || "");
+    setShowModal(true);
+  };
+
+  // Handle text input changes
+  const handleInputChange = (e) => {
+    const {name, value} = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  // Handle react-select changes for menu
+  const handleMenuChange = (selectedOption) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      menu_id: selectedOption ? selectedOption.value : null,
+    }));
+  };
+
+  // Handle content changes from HebrewEditor
+  const handleContentChange = (content) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      content: content,
+    }));
+  };
+
+  // Submit form for creating/updating a card. If a file is provided, use FormData to send all data together.
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      let method = formData.id ? "PUT" : "POST";
+      let url = formData.id ? `/api/cards/${formData.id}` : "/api/cards";
+
+      // If a file is selected, send as FormData
+      if (uploadFile) {
+        const fd = new FormData();
+        // Append all the card fields
+        fd.append("title", formData.title);
+        fd.append("image_url", formData.image_url); // Optional extra URL provided
+        fd.append("menu_id", formData.menu_id);
+        fd.append("content", formData.content);
+        fd.append("order_num", formData.order_num);
+        // Include the file (for the server, the key is "image")
+        fd.append("image", uploadFile);
+        // If editing, include id if needed
+        if (formData.id) {
+          fd.append("id", formData.id);
+        }
+        const res = await fetch(url, {
+          method,
+          body: fd,
+          // Do not set Content-Type: the browser adds the correct boundary for multipart requests.
+        });
+        if (!res.ok) throw new Error("Network response was not ok");
+      } else {
+        // Otherwise send JSON data
+        const res = await fetch(url, {
+          method,
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        });
+        if (!res.ok) throw new Error("Network response was not ok");
+      }
+      // Refresh the card list and close the modal
+      await fetchCards();
+      setShowModal(false);
+    } catch (error) {
+      console.error("Error saving card:", error);
+    } finally {
+      setIsSubmitting(false);
+      setUploadFile(null);
+    }
+  };
+
+  // Delete a card given its id
+  const handleDelete = async (cardId) => {
+    if (!window.confirm("האם אתה בטוח שברצונך למחוק את הכרטיס?")) return;
+    try {
+      const res = await fetch(`/api/cards/${cardId}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Failed to delete the card");
+      await fetchCards();
+    } catch (error) {
+      console.error("Error deleting card:", error);
+    }
+  };
+
+  // Build react-select options based on menus data
+  const menuOptions = menus.map((menu) => ({
+    value: menu.id,
+    label: menu.title,
+  }));
+
+  // Determine selected menu option if editing a card
+  const selectedMenuOption =
+      menuOptions.find((option) => option.value === formData.menu_id) || null;
+
+  return (
+      <div className="container mt-4">
+
+        {/* Cards List */}
+        <table className="table table-striped">
+          <thead>
+          <tr>
+            <th>כותרת</th>
+            <th>תמונה</th>
+            <th>תפריט</th>
+            <th>סדר</th>
+            <th>
+              <button className="btn btn-primary btn-sm" onClick={openCreateModal}>
+                הוסף כרטיס
+              </button>
+            </th>
+          </tr>
+          </thead>
+          <tbody>
+          {cards.map((card) => (
+              <tr key={card.id}>
+                <td>{card.title}</td>
+                <td>
+                  {card.image_url ? (
+                      <img
+                          src={card.image_url}
+                          alt={card.title}
+                          style={{width: "60px"}}
+                          className="img-thumbnail"
+                      />
+                  ) : (
+                      "אין תמונה"
+                  )}
+                </td>
+                <td>{card.menu ? card.menu.title : "לא זמין"}</td>
+                <td>{card.order_num}</td>
+                <td>
+                  <button
+                      className="btn btn-sm btn-secondary me-2"
+                      onClick={() => openEditModal(card)}
+                  >
+                    ערוך
+                  </button>
+                  <button
+                      className="btn btn-sm btn-danger"
+                      onClick={() => handleDelete(card.id)}
+                  >
+                    מחק
+                  </button>
+                </td>
+              </tr>
+          ))}
+          {cards.length === 0 && (
+              <tr>
+                <td colSpan="5" className="text-center">
+                  אין כרטיסים זמינים.
+                </td>
+              </tr>
+          )}
+          </tbody>
+        </table>
+
+        {/* Bootstrap 5 Modal for create/update */}
+        {showModal && (
+            <>
+              <div className="modal show fade" style={{display: "block"}}>
+                <div className="modal-dialog modal-lg">
+                  <div className="modal-content">
+                    <form onSubmit={handleSubmit}>
+                      <div className="modal-header">
+                        <h5 className="modal-title">
+                          {formData.id ? "ערוך כרטיס" : "הוסף כרטיס"}
+                        </h5>
+                        <button
+                            type="button"
+                            className="btn-close"
+                            onClick={() => setShowModal(false)}
+                        ></button>
+                      </div>
+                      <div className="modal-body">
+                        {/* Title Input */}
+                        <div className="mb-3">
+                          <label className="form-label">כותרת</label>
+                          <input
+                              type="text"
+                              className="form-control"
+                              name="title"
+                              value={formData.title}
+                              onChange={handleInputChange}
+                              required
+                          />
                         </div>
-                        <div className="card-body">
-                            <form ref={formRef} onSubmit={handleSubmit} encType="multipart/form-data">
-                                <div className="mb-3">
-                                    <label htmlFor="title" className="form-label">כותרת</label>
-                                    <input
-                                        type="text"
-                                        className="form-control"
-                                        id="title"
-                                        name="title"
-                                        value={formData.title}
-                                        onChange={handleInputChange}
-                                        required
-                                    />
-                                </div>
 
-                                <div className="mb-3">
-                                    <label htmlFor="menu_id" className="form-label">תפריט</label>
-                                    <Select
-                                        id="menu_id"
-                                        name="menu_id"
-                                        value={menus.find(option => option.value === formData.menu_id) || null}
-                                        onChange={handleMenuChange}
-                                        options={menus}
-                                        isClearable
-                                        placeholder="בחר תפריט..."
-                                        className="basic-single"
-                                        classNamePrefix="select"
-                                    />
-                                </div>
-
-                                <div className="mb-3">
-                                    <label htmlFor="content" className="form-label">תוכן</label>
-                                    <HebrewEditor
-                                        value={formData.content}
-                                        onChange={handleEditorChange}
-                                    />
-                                </div>
-
-                                <div className="mb-3">
-                                    <label htmlFor="image" className="form-label">תמונה</label>
-                                    <input
-                                        type="file"
-                                        className="form-control"
-                                        id="image"
-                                        name="image"
-                                        onChange={handleFileChange}
-                                    />
-                                    {formData.image_url && (
-                                        <div className="mt-2">
-                                            <img
-                                                src={formData.image_url}
-                                                alt="תצוגה מקדימה"
-                                                className="img-thumbnail"
-                                                style={{ maxHeight: '100px' }}
-                                            />
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div className="mb-3">
-                                    <label htmlFor="order_num" className="form-label">סדר</label>
-                                    <input
-                                        type="number"
-                                        className="form-control"
-                                        id="order_num"
-                                        name="order_num"
-                                        value={formData.order_num}
-                                        onChange={handleInputChange}
-                                        required
-                                    />
-                                </div>
-
-                                <div className="d-flex gap-2">
-                                    <button type="submit" className="btn btn-primary">
-                                        {editingCard ? 'עדכן' : 'צור'}
-                                    </button>
-                                    {editingCard && (
-                                        <button type="button" className="btn btn-secondary" onClick={handleCancel}>
-                                            ביטול
-                                        </button>
-                                    )}
-                                </div>
-                            </form>
+                        {/* Image URL Input */}
+                        <div className="mb-3 hidden">
+                          <label className="form-label">קישור לתמונה</label>
+                          <input
+                              type="text"
+                              className="form-control"
+                              name="image_url"
+                              value={formData.image_url}
+                              onChange={handleInputChange}
+                          />
                         </div>
-                    </div>
-                </div>
 
-                <div className="col-md-8">
-                    <div className="card">
-                        <div className="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                            <h5 className="mb-0">כרטיסים</h5>
-                            <div className="input-group w-50 rtl">
-                                <input
-                                    type="text"
-                                    className="form-control"
-                                    placeholder="חיפוש..."
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
+                        <div className="row">
+                          {/* File Upload Input */}
+                          <div className="col-md-6 mb-3">
+                            <label className="form-label">העלה תמונה</label>
+                            <input
+                                type="file"
+                                className="form-control"
+                                accept="image/*"
+                                onChange={handleFileChange}
+                            />
+                          </div>
+
+                          {/* Image Preview */}
+                          <div className="col-md-6 mb-3">
+                            {previewImage ? (
+                                <img
+                                    src={previewImage}
+                                    alt={formData.title || "תצוגה מקדימה"}
+                                    style={{maxWidth: "100px", height: "auto"}}
+                                    className="img-thumbnail"
                                 />
-                                <button
-                                    className="btn btn-outline-light"
-                                    type="button"
-                                    onClick={() => fetchCards(1, search)}
-                                >
-                                    חיפוש
-                                </button>
-                            </div>
-                        </div>
-                        <div className="card-body">
-                            {cards.length === 0 ? (
-                                <p className="text-center my-4">לא נמצאו כרטיסים. צור את הכרטיס הראשון שלך!</p>
                             ) : (
-                                <div className="table-responsive">
-                                    <table className="table table-striped table-hover">
-                                        <thead>
-                                        <tr>
-                                            <th>כותרת</th>
-                                            <th>תפריט</th>
-                                            <th>תמונה</th>
-                                            <th>סדר</th>
-                                            <th></th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        {cards.map((card) => (
-                                            <tr key={card.id}>
-                                                <td>{card.title}</td>
-                                                <td>{getMenuNameById(card.menu_id)}</td>
-                                                <td>
-                                                    {card.image_url && (
-                                                        <img
-                                                            src={card.image_url}
-                                                            alt={card.title}
-                                                            className="img-thumbnail"
-                                                            style={{ maxHeight: '50px' }}
-                                                        />
-                                                    )}
-                                                </td>
-                                                <td>{card.order_num}</td>
-                                                <td>
-                                                    <div className="btn-group">
-                                                        <button
-                                                            className="btn btn-sm btn-outline-primary"
-                                                            onClick={() => handleEdit(card)}
-                                                        >
-                                                            <i className="bi bi-pencil"></i>
-                                                        </button>
-                                                        <button
-                                                            className="btn btn-sm btn-outline-danger"
-                                                            onClick={() => handleDelete(card.id)}
-                                                        >
-                                                            <i className="bi bi-trash"></i>
-                                                        </button>
-
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                <p className="text-muted">אין תצוגה מקדימה לתמונה</p>
                             )}
+                          </div>
                         </div>
-                        {totalPages > 1 && (
-                            <div className="card-footer">
-                                <nav aria-label="ניווט בין דפי כרטיסים">
-                                    <ul className="pagination justify-content-center mb-0">
-                                        <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                                            <button className="page-link" onClick={() => setCurrentPage(1)}>ראשון</button>
-                                        </li>
-                                        <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                                            <button className="page-link" onClick={() => setCurrentPage(currentPage - 1)}>הקודם</button>
-                                        </li>
-                                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                                            <li key={page} className={`page-item ${currentPage === page ? 'active' : ''}`}>
-                                                <button className="page-link" onClick={() => setCurrentPage(page)}>{page}</button>
-                                            </li>
-                                        ))}
-                                        <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                                            <button className="page-link" onClick={() => setCurrentPage(currentPage + 1)}>הבא</button>
-                                        </li>
-                                        <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                                            <button className="page-link" onClick={() => setCurrentPage(totalPages)}>אחרון</button>
-                                        </li>
-                                    </ul>
-                                </nav>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
 
-            {/* Display Cards Grid Preview */}
-            <div className="row mt-5">
-                <div className="col-12">
-                    <h3 className="border-bottom pb-2 mb-4">תצוגה מקדימה של הכרטיסים</h3>
-                </div>
-                {cards.map((card) => (
-                    <div key={card.id} className="col-md-4 mb-4">
-                        <div className="card h-100">
-                            {card.image_url && (
-                                <img src={card.image_url} className="card-img-top" alt={card.title} />
-                            )}
-                            <div className="card-body">
-                                <h5 className="card-title">{card.title}</h5>
-                                <div className="card-text" dangerouslySetInnerHTML={createMarkup(card.content)}></div>
-                                {card.menu_id && (
-                                    <div className="mt-2">
-                                        <span className="badge bg-primary">{getMenuNameById(card.menu_id)}</span>
-                                    </div>
-                                )}
-                            </div>
-                            <div className="card-footer bg-white">
-                                <small className="text-muted">סדר: {card.order_num}</small>
-                            </div>
+                        {/* Menu Selection and Order Number on the same row */}
+                        <div className="row">
+                          <div className="col-md-6 mb-3">
+                            <label className="form-label">תפריט</label>
+                            <Select
+                                options={menuOptions}
+                                value={selectedMenuOption}
+                                onChange={handleMenuChange}
+                                isClearable
+                            />
+                          </div>
+                          <div className="col-md-2 mb-3">
+                            <label className="form-label">סדר</label>
+                            <input
+                                type="number"
+                                className="form-control"
+                                name="order_num"
+                                value={formData.order_num}
+                                onChange={handleInputChange}
+                            />
+                          </div>
                         </div>
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
+
+
+                        {/* Content Editor using HebrewEditor */}
+                        <div className="mb-3">
+                          <label className="form-label">תוכן</label>
+                          <HebrewEditor
+                              value={formData.content}
+                              onChange={handleContentChange}
+                          />
+                        </div>
+                      </div>
+                      <div className="modal-footer">
+                        <button
+                            type="button"
+                            className="btn btn-secondary"
+                            onClick={() => setShowModal(false)}
+                        >
+                          סגור
+                        </button>
+                        <button
+                            type="submit"
+                            className="btn btn-primary"
+                            disabled={isSubmitting}
+                        >
+                          {isSubmitting ? "שומר..." : "שמור"}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+              {/* Modal backdrop */}
+              <div
+                  className="modal-backdrop fade show"
+                  onClick={() => setShowModal(false)}
+              ></div>
+            </>
+        )}
+      </div>
+  );
 };
 
 export default Cards;

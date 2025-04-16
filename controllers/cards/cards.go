@@ -25,7 +25,6 @@ func UpdateCard(ctx *fiber.Ctx) error {
 	if err == nil {
 		c.Id = int64(id)
 	}
-	db.DumpPrettyJson(c, "UpdateCard")
 
 	image, err := ctx.FormFile("image")
 	if err == nil {

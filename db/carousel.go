@@ -31,3 +31,8 @@ func (c *Carousel) Get(id int) error {
 	res := MainDB.Where("id = ?", id).First(c)
 	return res.Error
 }
+
+func (c *Carousel) Delete() error {
+	res := MainDB.Where("id = ?", c.ID).Delete(c)
+	return res.Error
+}

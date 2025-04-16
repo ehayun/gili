@@ -54,6 +54,7 @@ func routes(app *fiber.App) {
 	api.Get("/carousels", carousels.List)
 	api.Post("/carousels", carousels.UpdateCarousel)
 	api.Put("/carousels/:id", carousels.UpdateCarousel)
+	api.Delete("/carousels/:id", carousels.DeleteCarousel)
 
 	api.Post("/cards", cards.UpdateCard)
 	api.Put("/cards/:id", cards.UpdateCard)

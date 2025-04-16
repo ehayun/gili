@@ -40,3 +40,14 @@ func List(ctx *fiber.Ctx) error {
 	var c db.Carousel
 	return ctx.JSON(c.List())
 }
+
+func DeleteCarousel(ctx *fiber.Ctx) error {
+	id := ctx.Params("id")
+	var c db.Carousel
+	c.ID = db.StrToInt(id)
+	if err := c.Delete(); err != nil {
+		return ctx.Status(401).JSON(fiber.Map{"error": err})
+	}
+	return ctx.JSON(fiber.Map{})
+
+}
