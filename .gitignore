@@ -1,5 +1,6 @@
 .idea/
 ./starter
+.DS_Store
 uploads/
 tmp/
 data/

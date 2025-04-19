@@ -1,4 +1,12 @@
 <style>
+
+
+    @media (max-width: 767px) {
+        .profile-img {
+            margin-top: 1rem;
+        }
+    }
+
     .card {
         transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
@@ -8,70 +16,133 @@
         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
     }
 </style>
-<div class="container">
+<div class="custom-container">
 
-    {{if .hasCarousels}}
-    <div class="col-lg-12">
-        <div class="card">
-            <div class="card-body">
-                <div id="carouselExampleCaptions" class="carousel slide carousel-light" data-bs-ride="carousel">
-                    <ol class="carousel-indicators">
-                        {{range $idx, $val := .carousels}}
-                        <li data-bs-target="#carouselExampleCaptions" data-bs-slide-to="{{$idx}}"
-                            class="{{if eq $idx 0}}active{{end}}"></li>
-                        {{end}}
-                    </ol>
-                    <div class="carousel-inner">
-                        {{range $idx, $val := .carousels}}
-                        <div class="carousel-item  {{if eq $idx 0}}active{{end}}">
-                            <img src="{{.ImageUrl}}" class="d-block w-100" style="max-height: 400px; object-fit: cover;"
-                                 alt="modernize-img"/>
-                            <div class="carousel-caption d-none d-md-block">
-                                <h5 class="text-light">{{.Title}}</h5>
-                                <p>
-                                    {{.Content|safe}}
-                                </p>
-                            </div>
-                        </div>
-                        {{end}}
-                    </div>
-                    <a class="carousel-control-prev" href="#carouselExampleCaptions" role="button" data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Previous</span>
-                    </a>
-                    <a class="carousel-control-next" href="#carouselExampleCaptions" role="button" data-bs-slide="next">
-                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Next</span>
-                    </a>
-                </div>
-            </div>
+  {{if .hasCarousels}}
+
+  <div id="myCarousel" class="carousel slide" data-bs-ride="carousel">
+    <div class="carousel-inner">
+      {{range $idx, $val := .carousels}}
+      <div class="carousel-item {{if eq $idx 0}}active{{end}}">
+        <img src="{{.ImageUrl}}" class="d-block w-100" alt="Image {{$idx}}"/>
+      </div>
+      {{end}}
+    </div>
+
+    <button class="carousel-control-prev" type="button" data-bs-target="#myCarousel" data-bs-slide="prev">
+      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Previous</span>
+    </button>
+
+    <button class="carousel-control-next" type="button" data-bs-target="#myCarousel" data-bs-slide="next">
+      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Next</span>
+    </button>
+
+    <div class="carousel-indicators">
+      {{range $idx, $val := .carousels}}
+      {{if eq $idx 0}}
+      <button type="button" data-bs-target="#myCarousel" data-bs-slide-to="{{$idx}}"
+              class="{{if eq $idx 0}}active{{end}}" aria-current="true" aria-label="Slide {{$idx}}"></button>
+      {{else}}
+      <button type="button" data-bs-target="#myCarousel" data-bs-slide-to="{{$idx}}"
+              aria-label="Slide {{$idx}}"></button>
+      {{end}}
+      {{end}}
+    </div>
+  </div>
+  {{end}}
+  <div class="row">
+    <hr>
+  </div>
+
+  <section class="custom-container my-5">
+    <div class="row align-items-center">
+      <div class="col-md-9 mb-4">
+        <h4 class="fw-bold">גילי אדר - עורכת דין ומגשרת משפחה</h4>
+        <p class="lead-text">מלווה משפחות לעבר עתיד משפחתי בצמתי חיים משמעותיים</p>
+        <p>
+          אני מאמינה שבזמן משבר או בצומת משמעותית, חשוב להסתכל קדימה ולפעול מתוך חזון על העתיד.
+          בתהליך משותף של הקשבה, הבנה ויצירתיות, נבנה יחד מציאות משפחתית מיטיבה.
+          אני מביאה איתי ניסיון עשיר בניהול תהליכים מורכבים וגישה אישית.
+        </p>
+        <div class="mb-4">&nbsp;</div>
+      </div>
+      <div class="col-md-3 text-end">
+        <img src="/public/images/gili.png" alt="גילי אדר" class="profile-img"/>
+      </div>
+    </div>
+
+    <!-- Articles -->
+    <div class="rounded-box" style="padding-top: 4.5rem;">
+      <div class="section-tag">מה מיוחד בליווי שלי?</div>
+      <div class="row g-4">
+        <div class="col-12 col-md-6 col-lg-4">
+          <div>
+            <h4><span class="icon-bullet me-2"></span>גישה הוליסטית</h4>
+            <p>המתבוננת על התמונה המשפחתית המלאה</p>
+          </div>
         </div>
+        <div class="col-12 col-md-6 col-lg-4">
+          <div>
+            <h4><span class="icon-bullet me-2"></span>יצירת מרחב בטוח</h4>
+            <p>דיאלוג פתוח ומכבד</p>
+          </div>
+        </div>
+        <div class="col-12 col-md-6 col-lg-4">
+          <div>
+            <h4><span class="icon-bullet me-2"></span>התאמה אישית</h4>
+            <p>מדוייקת לצרכי המשפחה</p>
+          </div>
+        </div>
+        <div class="col-12 col-md-6 col-lg-4">
+          <div>
+            <h4><span class="icon-bullet me-2"></span>מומחיות משפטית</h4>
+            <p>לצד רגישות לדינמיקה המשפחתית</p>
+          </div>
+        </div>
+        <div class="col-12 col-md-6 col-lg-4">
+          <div>
+            <h4><span class="icon-bullet me-2"></span>ליווי מקצועי</h4>
+            <p>ואנושי לאורך כל התהליך</p>
+          </div>
+        </div>
+        <div class="col-12 col-md-6 col-lg-4">
+          <div class="mt-4">
+            <a href="#details">
+              <button class="btn btn-primary rounded-5">לתיאום ייעוץ ללא עלות והשארת פרטים</button>
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <div class="row g-1">
+    {{range .cards}}
+    <div class="col-md-3">
+      <a href="/{{.Menu.Url}}" class="text-decoration-none">
+        <div class="card h-100">
+          <div class="card-header">{{.Title}}</div>
+          <img src="{{.ImageUrl}}" class="card-img-top" alt="{{.Title}}">
+          <div class="card-body">
+            <p class="card-text">
+              {{.Content | safe}}
+            </p>
+          </div>
+          <div class="card-footer bg-white border-0">
+            <a href="/{{.Menu.Url}}" class="btn-custom">
+              {{_ "Read more"}}&nbsp;
+              <i class="bi bi-chevron-double-left"></i>
+            </a>
+          </div>
+        </div>
+      </a>
     </div>
     {{end}}
-
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
-        <!-- Card 1 -->
-        {{range .cards}}
-        <a href="/{{.Menu.Url}}" class="text-decoration-none">
-            <div class="col">
-                <div class="card h-100">
-                    <div class="ratio ratio-16x9">
-                        <img src="{{.ImageUrl}}" class="card-img-top object-fit-cover rounded-top" alt="{{.Title}}">
-                    </div>
-                    <div class="card-body">
-                        <h4 class="card-title ">
-                        <span class="badge text-bg-primary p-2">{{.Title}}</span>
-                        </h4>
-                        <p class="card-text">{{.Content | safe}}</p>
-                    </div>
-                    <div class="card-footer">
-                        <small class="text-muted"></small>
-                    </div>
-                </div>
-            </div>
-        </a>
-        {{end}}
-    </div>
+  </div>
 
 </div>
 

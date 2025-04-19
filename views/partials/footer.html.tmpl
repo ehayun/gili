@@ -1,35 +1,67 @@
 <footer class="mt-4">
-  <div class="container">
+  <div class="container-fluid">
     <div class="row">
       <div class="col-lg-8">
-        <div class="d-block bg-site bg-opacity-25 rounded p-2">
-          <div class="form-container rounded">
+        <div class="d-block xbg-site bg-opacity-25 rounded p-2">
+          <div class="form-container rounded" id="details">
             <h3>לפרטים נוספים ותיאום פגישת הכרות, הרשמו כאן :</h3>
             <form id="contactForm" method="post" action="/message/send">
-              <div class="row">
-                <div class="col-md-4">
-                  <input type="text" class="form-control" name="firstName" placeholder="שם">
-                </div>
+              <!-- Top row: name, email, phone -->
+              <div class="d-flex flex-wrap gap-2 justify-content-center mb-2">
+                <input type="text" class="form-control rounded-pill text-start" name="firstName" placeholder="שם"
+                       style="max-width: 230px;"/>
+                <input type="email" class="form-control rounded-pill text-start" name="email" placeholder="אימייל"
+                       style="max-width: 230px;"/>
+                <input type="text" class="form-control rounded-pill text-start" name="phone" placeholder="טלפון"
+                       style="max-width: 230px;"/>
+              </div>
 
-                <div class="col-md-4">
-                  <input type="email" class="form-control" name="email" placeholder="אימייל" required>
-                </div>
-                <div class="col-md-4">
-                  <input type="text" class="form-control" name="phone" placeholder="טלפון" required>
-                </div>
+              <!-- Bottom row: textarea + button -->
+              <div class="d-flex gap-2 justify-content-center">
+                <textarea name="message" rows="1" class="form-control rounded-pill text-end" placeholder="הודעה"
+                          style="min-width: 300px; max-width: 600px;"></textarea>
+                <button type="submit" class="btn btn-dark rounded-pill px-4">שליחה</button>
+              </div>
 
-                <div class="mt-1">
-                  <textarea class="form-control" name="message" rows="3" required placeholder="הודעה"></textarea>
-                </div>
 
-                <div class="text-center mt-1">
-                  <button type="submit" class="btn btn-primary btn-submit">שלחו הודעה</button>
-                </div>
+              <div class="text-center mt-1">
+              </div>
             </form>
           </div>
 
         </div>
       </div>
     </div>
-  </div>
+    <div class="row mt-4 bg-primary text-light p-4">
+      <div class="col-md-4 text-light">
+        {{range .menus}}
+        <div >
+        <a href="/{{.Url}}" class="text-decoration-none">
+          <span class="text-start text-light">
+            <img src="/public/images/Bullet.png" class="" width="20px" alt="*" />{{.Title}}&nbsp;</span>
+        </a>
+          </div>
+        {{end}}
+      </div>
+      <div class="col-md-8 text-end">
+        <a class="navbar-brand" href="/">
+          <img src="/public/images/footer-logo.png" class="logo" alt="לוגו" />
+        </a>
+        <br>
+        <a href="{{.params.Facebook}}">
+          {{.params.Facebook}}
+          <img src="/public/images/facebook.png" class="logo" alt="facebook" />
+        </a>
+        <br>
+        <a href="https://api.whatsapp.com/send?phone={{.params.Phone}}" rel="noopener noreferrer" target="_blank" class="text-light">
+          {{.params.Phone}}
+          <img src="/public/images/phone-icon.png" class="logo" alt="phone" />
+        </a>
+        <br>
+        <a href="mailto:{{.params.Email}}" rel="noopener noreferrer" target="_blank" class="text-light">
+          {{.params.Email}}
+          <img src="/public/images/email.png" class="logo" alt="email" />
+        </a>
+      </div>
+    </div>
 </footer>
