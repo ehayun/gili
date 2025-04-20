@@ -12,7 +12,7 @@ const Homepage = () => {
             <ul className="nav nav-tabs" id="myTab" role="tablist">
                 <li className="hidden nav-item" role="presentation">
                     <button
-                        className={`nav-link ${activeTab === 'details' ? 'active' : ''}`}
+                        className={`nav-link text-light ${activeTab === 'details' ? 'active' : ''}`}
                         onClick={() => setActiveTab('details')}
                         type="button"
                         role="tab"
@@ -22,7 +22,7 @@ const Homepage = () => {
                 </li>
                 <li className="nav-item" role="presentation">
                     <button
-                        className={`nav-link ${activeTab === 'cards' ? 'active' : ''}`}
+                        className={`nav-link text-light ${activeTab === 'cards' ? 'active' : ''}`}
                         onClick={() => setActiveTab('cards')}
                         type="button"
                         role="tab"
