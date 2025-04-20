@@ -32,7 +32,7 @@ const Homepage = () => {
                 </li>
                 <li className="nav-item" role="presentation">
                     <button
-                        className={`nav-link ${activeTab === 'carousels' ? 'active' : ''}`}
+                        className={`light-nav-link ${activeTab === 'carousels' ? 'active' : ''}`}
                         onClick={() => setActiveTab('carousels')}
                         type="button"
                         role="tab"
