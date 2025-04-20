@@ -12,7 +12,7 @@ const Homepage = () => {
             <ul className="nav nav-tabs" id="myTab" role="tablist">
                 <li className="hidden nav-item" role="presentation">
                     <button
-                        className={`light-nav-link ${activeTab === 'details' ? 'active' : ''}`}
+                        className={`light-nav-link rounded ${activeTab === 'details' ? 'active' : ''}`}
                         onClick={() => setActiveTab('details')}
                         type="button"
                         role="tab"
@@ -22,7 +22,7 @@ const Homepage = () => {
                 </li>
                 <li className="nav-item" role="presentation">
                     <button
-                        className={`light-nav-link ${activeTab === 'cards' ? 'active' : ''}`}
+                        className={`light-nav-link rounded ${activeTab === 'cards' ? 'active' : ''}`}
                         onClick={() => setActiveTab('cards')}
                         type="button"
                         role="tab"
@@ -32,7 +32,7 @@ const Homepage = () => {
                 </li>
                 <li className="nav-item" role="presentation">
                     <button
-                        className={`light-nav-link ${activeTab === 'carousels' ? 'active' : ''}`}
+                        className={`light-nav-link rounded ${activeTab === 'carousels' ? 'active' : ''}`}
                         onClick={() => setActiveTab('carousels')}
                         type="button"
                         role="tab"
