@@ -23,7 +23,7 @@
   <div id="myCarousel" class="carousel slide" data-bs-ride="carousel">
     <div class="carousel-inner">
       {{range $idx, $val := .carousels}}
-      <div class="carousel-item {{if eq $idx 0}}active{{end}}">
+      <div class="carousel-item {{if eq $idx 0}}active{{end}}" style="max-height: 400px;">
         <img src="{{.ImageUrl}}" class="d-block w-100" alt="Image {{$idx}}"/>
       </div>
       {{end}}
@@ -142,7 +142,7 @@
         </div>
 
 
-        
+
       </a>
     </div>
     {{end}}
