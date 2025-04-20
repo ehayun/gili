@@ -219,6 +219,14 @@ ul {
   font-style: italic;
   margin-left: 10px;
 }
+.light-nav-link.active {
+  color: #fff;
+  background-color: #0E4E8D;
+  font-size: x-large;
+  font-style: italic;
+  margin-left: 10px;
+  border-bottom: 2px solid #fff;
+}
 
 .book-container:hover {
   background-color: white;
