@@ -79,31 +79,31 @@
       <div class="row g-4">
         <div class="col-12 col-md-6 col-lg-4">
           <div>
-            <h4><span class="icon-bullet me-2"></span>גישה הוליסטית</h4>
+            <img src="/public/images/Bullet.png" class="me-2" width="50px" alt="*" /><span class="fs-6">גישה הוליסטית</span>
             <p>המתבוננת על התמונה המשפחתית המלאה</p>
           </div>
         </div>
         <div class="col-12 col-md-6 col-lg-4">
           <div>
-            <h4><span class="icon-bullet me-2"></span>יצירת מרחב בטוח</h4>
+            <img src="/public/images/Bullet.png" class="me-2" width="50px" alt="*" /><span class="fs-6"> יצירת מרחב בטוח</span>
             <p>דיאלוג פתוח ומכבד</p>
           </div>
         </div>
         <div class="col-12 col-md-6 col-lg-4">
           <div>
-            <h4><span class="icon-bullet me-2"></span>התאמה אישית</h4>
+            <img src="/public/images/Bullet.png" class="me-2" width="50px" alt="*" /><span class="fs-6"> התאמה אישית</span>
             <p>מדוייקת לצרכי המשפחה</p>
           </div>
         </div>
         <div class="col-12 col-md-6 col-lg-4">
           <div>
-            <h4><span class="icon-bullet me-2"></span>מומחיות משפטית</h4>
+            <img src="/public/images/Bullet.png" class="me-2" width="50px" alt="*" /><span class="fs-6"> מומחיות משפטית</span>
             <p>לצד רגישות לדינמיקה המשפחתית</p>
           </div>
         </div>
         <div class="col-12 col-md-6 col-lg-4">
           <div>
-            <h4><span class="icon-bullet me-2"></span>ליווי מקצועי</h4>
+            <img src="/public/images/Bullet.png" class="me-2" width="50px" alt="*" /><span class="fs-6"> ליווי מקצועי</span>
             <p>ואנושי לאורך כל התהליך</p>
           </div>
         </div>
@@ -124,21 +124,25 @@
     {{range .cards}}
     <div class="col-md-3">
       <a href="/{{.Menu.Url}}" class="text-decoration-none">
-        <div class="card h-100">
+
+        <div class="card h-100 d-flex flex-column">
           <div class="card-header">{{.Title}}</div>
           <img src="{{.ImageUrl}}" class="card-img-top" alt="{{.Title}}">
-          <div class="card-body">
+          <div class="card-body flex-grow-1">
             <p class="card-text">
               {{.Content | safe}}
             </p>
           </div>
-          <div class="card-footer bg-white border-0">
+          <div class="card-footer bg-white border-0 mt-auto">
             <a href="/{{.Menu.Url}}" class="btn-custom">
               {{_ "Read more"}}&nbsp;
               <i class="bi bi-chevron-double-left"></i>
             </a>
           </div>
         </div>
+
+
+        
       </a>
     </div>
     {{end}}
