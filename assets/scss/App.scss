@@ -122,6 +122,11 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
   border: var(--bs-border-width) solid #A47D3D;
 }
 
+ul {
+  list-style: disc;
+  padding: 0;
+}
+
 .icon-bullet::before {
   content: url("https://gili-gishurim.com/public/images/Bullet.png");
   height: 10px;
