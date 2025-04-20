@@ -118,6 +118,10 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
   background-color: #0C2340 !important;
 }
 
+.form-control {
+  border: var(--bs-border-width) solid #A47D3D;
+}
+
 .icon-bullet::before {
   content: url("https://gili-gishurim.com/public/images/Bullet.png");
   height: 10px;
