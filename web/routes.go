@@ -20,6 +20,7 @@ func routes(app *fiber.App) {
 	app.Get("/login", auth.Login)
 	app.Post("/login", auth.PostLogin)
 	app.Post("/logout", auth.Logout)
+	app.Get("/sitemap.xml", homepage.Sitemap)
 
 	app.Get("/:page", pages.Page)
 	app.Get("/pages/:id", pages.ShowPage)
