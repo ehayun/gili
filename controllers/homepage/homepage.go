@@ -100,7 +100,7 @@ func Sitemap(ctx *fiber.Ctx) error {
 				Loc:        fmt.Sprintf("https://gili-gishurim.com/pages/%v", p.ID),
 				LastMod:    time.Now().Format("2006-01-02"),
 				ChangeFreq: "weekly",
-				Priority:   "0.8",
+				Priority:   "0.6",
 			})
 		}
 	}
