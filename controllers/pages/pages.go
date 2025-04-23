@@ -3,6 +3,7 @@ package pages
 import (
 	"fmt"
 	"gishur/db"
+	"math/rand"
 	"os"
 	"path"
 	"path/filepath"
@@ -88,7 +89,7 @@ func UpdateOrCreate(ctx *fiber.Ctx) error {
 	if p.ID > 0 {
 		err = p.Update()
 	} else {
-		p.Slug = fmt.Sprintf("%v", time.Now().Unix())
+		p.Slug = randomString(10)
 		err = p.Create()
 	}
 
@@ -173,4 +174,15 @@ func GetPage(ctx *fiber.Ctx) error {
 		return ctx.Status(400).JSON(fiber.Map{"message": "not found"})
 	}
 	return ctx.JSON(p)
+}
+
+const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+func randomString(length int) string {
+	rand.Seed(time.Now().UnixNano())
+	b := make([]byte, length)
+	for i := range b {
+		b[i] = charset[rand.Intn(len(charset))]
+	}
+	return string(b)
 }
