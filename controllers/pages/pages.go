@@ -149,11 +149,19 @@ func Upload(ctx *fiber.Ctx) error {
 }
 
 func ShowPage(ctx *fiber.Ctx) error {
+	var slug string
 	id, _ := ctx.ParamsInt("id", 0)
+	if len(fmt.Sprintf("%v", id)) > 6 {
+		slug = ctx.Params("id")
+	}
 	var p db.Page
 	var ps []db.Page
-	if err := p.Get(int64(id)); err != nil {
-		return ctx.Status(400).JSON(fiber.Map{"message": "not Created"})
+	if slug > "" {
+		db.MainDB.Where("slug = ?", slug).First(&p)
+	} else {
+		if err := p.Get(int64(id)); err != nil {
+			return ctx.Status(400).JSON(fiber.Map{"message": "not Created"})
+		}
 	}
 	return ctx.Render("pages/page", fiber.Map{"page": p, "pages": ps})
 }
