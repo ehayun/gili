@@ -107,6 +107,8 @@ func Web() {
 		m["params"] = param
 		m["menus"] = menus
 		m["mode"] = config.Config.Mode
+
+		m["canonical"] = getPageUrl(ctx)
 		// Bind flash message variables to context
 		_ = ctx.Bind(m)
 
@@ -126,6 +128,10 @@ func Web() {
 	// start web server
 	log.Fatal(app.Listen(fmt.Sprintf(":%s", config.Config.Port)))
 
+}
+
+func getPageUrl(ctx *fiber.Ctx) string {
+	return ctx.BaseURL() + ctx.OriginalURL()
 }
 
 func notFound(c *fiber.Ctx) error {
