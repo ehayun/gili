@@ -97,7 +97,7 @@ func Sitemap(ctx *fiber.Ctx) error {
 		p := pages[i]
 		if p.ParentID != nil {
 			urls = append(urls, Url{
-				Loc:        fmt.Sprintf("https://gili-gishurim.com/pages/%v", p.ID),
+				Loc:        fmt.Sprintf("https://gili-gishurim.com/pages/%v", p.Slug),
 				LastMod:    time.Now().Format("2006-01-02"),
 				ChangeFreq: "weekly",
 				Priority:   "0.6",
