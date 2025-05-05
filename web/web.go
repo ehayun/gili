@@ -131,6 +131,7 @@ func Web() {
 }
 
 func getPageUrl(ctx *fiber.Ctx) string {
+	fmt.Printf("==> %#v\n", ctx.BaseURL()+"/"+ctx.OriginalURL())
 	return ctx.BaseURL() + ctx.OriginalURL()
 }
 
