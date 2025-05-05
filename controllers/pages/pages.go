@@ -151,8 +151,9 @@ func Upload(ctx *fiber.Ctx) error {
 func ShowPage(ctx *fiber.Ctx) error {
 	var slug string
 	id, _ := ctx.ParamsInt("id", 0)
-	if len(fmt.Sprintf("%v", id)) > 6 {
-		slug = ctx.Params("id")
+	sId := ctx.Params("id")
+	if len(fmt.Sprintf("%v", sId)) > 6 {
+		slug = sId
 	}
 	var p db.Page
 	var ps []db.Page
