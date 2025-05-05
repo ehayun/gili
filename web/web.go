@@ -131,8 +131,10 @@ func Web() {
 }
 
 func getPageUrl(ctx *fiber.Ctx) string {
-	fmt.Printf("==> %#v\n", ctx.BaseURL()+"/"+ctx.OriginalURL())
-	return ctx.BaseURL() + ctx.OriginalURL()
+	url := ctx.BaseURL() + ctx.OriginalURL()
+	fmt.Printf("==> %#v\n", url)
+	url = strings.Replace(url, "http://gili", "https://gili", -1)
+	return url
 }
 
 func notFound(c *fiber.Ctx) error {
