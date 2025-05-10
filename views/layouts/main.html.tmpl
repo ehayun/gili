@@ -98,7 +98,7 @@
 
 
 
-<div class="custom-container mt-1 mb-1">
+<div class="container-fluid mt-1 mb-1">
     {{if isNotEmpty .message }}
     {{ $bg := "bg-danger text-light"}}
 
@@ -110,7 +110,7 @@
         {{_ .message}}
     </div>
     {{end}}
-    <div class="custom-container">
+    <div class="container-fluid">
         {{if .header}}
         {{template "partials/header" .}}
         {{end}}
