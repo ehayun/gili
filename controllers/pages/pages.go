@@ -33,7 +33,11 @@ func Page(ctx *fiber.Ctx) error {
 	db.MainDB.Where("menu_id = ?", menu.Id).First(&p)
 	var pages []db.Page
 	db.MainDB.Where("parent_id = ?", p.ID).Order("updated_at desc").Find(&pages)
-	return ctx.Render("pages/page", fiber.Map{"page": p, "pages": pages, "footer": len(pages) == 0})
+	params := fiber.Map{"page": p, "pages": pages,
+		"title":           p.Title,
+		"keywords":        p.Keywords,
+		"PageDesctiption": p.Title, "footer": len(pages) == 0}
+	return ctx.Render("pages/page", params)
 
 }
 
@@ -164,7 +168,10 @@ func ShowPage(ctx *fiber.Ctx) error {
 			return ctx.Status(400).JSON(fiber.Map{"message": "not Created"})
 		}
 	}
-	return ctx.Render("pages/page", fiber.Map{"page": p, "pages": ps})
+	params := fiber.Map{"page": p, "pages": ps, "title": p.Title, "PageDesctiption": p.Title,
+		"keywords": p.Keywords,
+	}
+	return ctx.Render("pages/page", params)
 }
 
 func Delete(ctx *fiber.Ctx) error {

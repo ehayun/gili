@@ -26,14 +26,22 @@ func AppSetup(c *fiber.Ctx) error {
 
 	user := db.GetCurrUser(c)
 
-	m := flash.Get(c)
+	var params db.Param
+	db.MainDB.Table("params").First(&params)
 
+	m := flash.Get(c)
 	m["HideFooter"] = false
 	if m["AppName"] == nil {
 		m["AppName"] = "App"
-		m["title"] = "App"
+		if m["title"] == nil {
+			m["title"] = config.Config.AppName
+		}
 	}
+	m["siteParams"] = params
 	m["curr_user"] = user
+	if m["keywords"] == nil || m["keywords"] == "" {
+		m["keywords"] = params.MainTitle
+	}
 
 	if m["errors"] == nil {
 		m["message"] = ""

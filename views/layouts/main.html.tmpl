@@ -17,8 +17,13 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>
-        {{if IsSameStr .title .AppName}}{{_ .AppName}}{{else}}{{_ .AppName}} - {{_ .title}} {{end}}
+        {{_ .AppName}} - {{.PageDesctiption}}
     </title>
+
+    <meta name="description" content=" {{_ .AppName}} - {{.PageDesctiption}}| {{.params.MainTitle}}, {{.params.SubTitle}}">
+    <meta name="keywords" content="{{.keywords}}">
+
+
     {{getCssAsset "main.css"}}
     <link rel="canonical" href="{{.canonical}}" />
     <link rel="icon" type="image/x-icon" href="/public/images/favicon.png">
@@ -88,7 +93,7 @@
                 {{end}}
             </ul>
         </div>
-        <a class="navbar-brand" href="/"><img src="/public/images/Logo.png" class="logo" alt="לוגו" /></a>
+        <a class="navbar-brand" href="/"><img src="/public/images/Logo.png" class="logo" alt="{{.params.MainTitle}}" /></a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
             <span class="navbar-toggler-icon"></span>
         </button>
