@@ -20,7 +20,7 @@
               <div class="d-flex flex-column align-items-center flex-md-row gap-2 justify-content-center">
                 <textarea name="message" rows="1" class="form-control rounded-pill text-start w-100" placeholder="הודעה"
                           style="min-width: 300px; max-width: 600px;"></textarea>
-                <button type="submit" class="btn btn-dark rounded-pill px-4 w-100 w-md-auto">שליחה</button>
+                <button type="submit" class="btn btn-dark rounded-pill px-3 w-md-auto">שליחה</button>
               </div>
 
 
@@ -33,20 +33,21 @@
       </div>
     </div>
     <div class="row mt-4 bg-primary text-light p-4">
-      <div class="col-md-4 text-light">
+      <div class="col-md-4 text-light d-flex flex-row flex-wrap gap-2">
         {{range .menus}}
-        <div >
         <a href="/{{.Url}}" class="text-decoration-none">
           <span class="text-start text-light">
             <img src="/public/images/lightBullet.png" class="me-2" width="20px" alt="*" />{{.Title}}&nbsp;</span>
         </a>
-          </div>
         {{end}}
       </div>
+      <div class="d-md-none mt-4"></div>
       <div class="col-md-8 text-end">
         <a class="navbar-brand" href="/">
           <img src="/public/images/footer-logo.png" class="logo" alt="לוגו" />
         </a>
+      <div class="d-md-none mt-2"></div>
+
         <br>
         <a href="{{.params.Facebook}}" rel="noopener noreferrer" target="_blank" class="text-light">
           {{_ "Facebook"}}
