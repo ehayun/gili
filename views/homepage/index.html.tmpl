@@ -41,6 +41,9 @@
       {{range $idx, $val := .carousels}}
       <div class="carousel-item {{if eq $idx 0}}active{{end}}" style="max-height: 400px;">
         <img src="{{.ImageUrl}}" class="d-block w-100" alt="Image {{$idx}}"/>
+        <div class="carousel-caption d-none d-md-block">
+          <h5 class="card-title" style="margin-top: -320px; margin-right:170px;">{{.Title}}</h5>
+        </div>
       </div>
       {{end}}
     </div>
