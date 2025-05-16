@@ -1,6 +1,7 @@
 .idea/
 ./starter
 .DS_Store
+.vscode/
 uploads/
 tmp/
 data/
