@@ -46,9 +46,12 @@ html, body {
   height: 100%;
 }
 
-.handwriting {
-  font-family: 'Handwriting', cursive !important;
-}
+  .handwriting {
+    font-family: Handwriting, sans-serif !important;
+    color: #0c2340;
+    font-size: 35px !important;
+  }
+
 .custom-container {
   width: 100%;
   //max-width: 1140px; /* Bootstrap lg breakpoint */
