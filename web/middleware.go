@@ -40,7 +40,7 @@ func AppSetup(c *fiber.Ctx) error {
 	m["siteParams"] = params
 	m["curr_user"] = user
 	if m["keywords"] == nil || m["keywords"] == "" {
-		m["keywords"] = params.MainTitle
+		m["keywords"] = params.MainTitle + "גישור לגירושין,גישור בהסכמה, גישור"
 	}
 
 	if m["errors"] == nil {
