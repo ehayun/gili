@@ -30,6 +30,11 @@ $blue_bg: #011B6B !default;
   font-family: 'Heebo';
   src: url('https://gili-gishurim.com/public/fonts/Heebo-VariableFont_wght.ttf') format('truetype');
 }
+@font-face {
+  font-family: 'Handwriting';
+  src: url('https://gili-gishurim.com/public/fonts/Motek.ttf') format('truetype');
+}
+
 html, body {
   font-family: 'Heebo', sans-serif !important;
   background-color: #fff;
@@ -41,6 +46,9 @@ html, body {
   height: 100%;
 }
 
+.handwriting {
+  font-family: 'Handwriting', cursive !important;
+}
 .custom-container {
   width: 100%;
   //max-width: 1140px; /* Bootstrap lg breakpoint */
