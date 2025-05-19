@@ -101,3 +101,18 @@
       </div>
     </div>
 </footer>
+<script>
+  // Execute reCAPTCHA when the form is submitted
+  document.getElementById('contactForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    grecaptcha.ready(function() {
+      grecaptcha.execute('6Lfn9z8rAAAAAA6tMnhUJsNU335kuMmgT40uCKjT', {action: 'submit'}).then(function(token) {
+        // Add token to form
+        document.getElementById('g-recaptcha-response').value = token;
+        // Submit the form
+        document.getElementById('contactForm').submit();
+      });
+    });
+  });
+</script>
