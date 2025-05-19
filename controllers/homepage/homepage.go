@@ -36,23 +36,30 @@ type RecaptchaResponse struct {
 func Send(ctx *fiber.Ctx) error {
 
 	type sender struct {
-		FirstName string
-		LastName  string
-		Email     string
-		Phone     string
-		Message   string
-		CopyEmail string
+		FirstName   string
+		LastName    string
+		Email       string
+		Phone       string
+		Message     string
+		CopyEmail   string
+		Success     bool     `json:"success"`
+		Score       float64  `json:"score"`
+		Action      string   `json:"action"`
+		ChallengeTS string   `json:"challenge_ts"`
+		Hostname    string   `json:"hostname"`
+		ErrorCodes  []string `json:"error-codes,omitempty"`
 	}
 
 	recaptchaToken := ctx.FormValue("g-recaptcha-response")
-	if recaptchaToken == "" {
-		return ctx.Redirect("/")
-	}
+	//if recaptchaToken == "" {
+	//	return ctx.Redirect("/")
+	//}
 
 	fmt.Printf("==> %v\n", recaptchaToken)
 
 	var message sender
 	_ = ctx.BodyParser(&message)
+	db.DumpPrettyJson(message, "message")
 	mp := fiber.Map{
 		"success": true,
 		"message": "Message sent successfully",
