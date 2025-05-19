@@ -24,6 +24,15 @@ func Index(c *fiber.Ctx) error {
 		"page":   p.Page, "carousels": carousels, "hasCarousels": len(carousels) > 0, "cards": cards.List()})
 }
 
+type RecaptchaResponse struct {
+	Success     bool     `json:"success"`
+	Score       float64  `json:"score"`
+	Action      string   `json:"action"`
+	ChallengeTS string   `json:"challenge_ts"`
+	Hostname    string   `json:"hostname"`
+	ErrorCodes  []string `json:"error-codes,omitempty"`
+}
+
 func Send(ctx *fiber.Ctx) error {
 
 	type sender struct {
@@ -34,6 +43,13 @@ func Send(ctx *fiber.Ctx) error {
 		Message   string
 		CopyEmail string
 	}
+
+	recaptchaToken := ctx.FormValue("g-recaptcha-response")
+	if recaptchaToken == "" {
+		return ctx.Redirect("/")
+	}
+
+	fmt.Printf("==> %v\n", recaptchaToken)
 
 	var message sender
 	_ = ctx.BodyParser(&message)
@@ -48,9 +64,7 @@ func Send(ctx *fiber.Ctx) error {
 	param, _ := p.Get()
 
 	if len(message.Email) == 0 {
-		url := ctx.BaseURL() + ctx.OriginalURL()
-		url = strings.Replace(url, "http://gili", "https://gili", -1)
-		return ctx.Redirect(url)
+		return ctx.Redirect("/")
 	}
 
 	_ = emails.SendEmail(ctx, "message", param.Email, translate.Trans("New message"), mp)
