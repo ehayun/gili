@@ -113,3 +113,7 @@ func Sitemap(ctx *fiber.Ctx) error {
 	ctx.Type("xml")
 	return xml.NewEncoder(ctx).Encode(sitemap)
 }
+
+func Robots(ctx *fiber.Ctx) error {
+	return ctx.SendFile("./public/robots.txt")
+}
