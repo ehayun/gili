@@ -101,6 +101,13 @@ func Send(ctx *fiber.Ctx) error {
 		return ctx.Redirect("/")
 	}
 
+	mp = fiber.Map{
+		"success": true,
+		"message": "Message sent successfully",
+		"sender":  message.FirstName,
+		"Phone":   message.Phone,
+	}
+
 	_ = emails.SendEmail(ctx, "message", param.Email, translate.Trans("New message"), mp)
 	return flash.WithSuccess(ctx, mp).RedirectBack("/")
 }
