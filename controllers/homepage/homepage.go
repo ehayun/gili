@@ -55,6 +55,8 @@ func Send(ctx *fiber.Ctx) error {
 	//	return ctx.Redirect("/")
 	//}
 
+	fmt.Printf("==> %v\n", string(ctx.Body()))
+
 	fmt.Printf("==> %v\n", recaptchaToken)
 
 	var message sender
