@@ -47,6 +47,12 @@ func Send(ctx *fiber.Ctx) error {
 	var p db.Param
 	param, _ := p.Get()
 
+	if len(message.Email) == 0 {
+		url := ctx.BaseURL() + ctx.OriginalURL()
+		url = strings.Replace(url, "http://gili", "https://gili", -1)
+		return ctx.Redirect(url)
+	}
+
 	_ = emails.SendEmail(ctx, "message", param.Email, translate.Trans("New message"), mp)
 	return flash.WithSuccess(ctx, mp).RedirectBack("/")
 }
