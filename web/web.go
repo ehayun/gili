@@ -132,9 +132,7 @@ func Web() {
 
 func getPageUrl(ctx *fiber.Ctx) string {
 	url := ctx.BaseURL() + ctx.OriginalURL()
-	fmt.Printf("url b4 ==> %v\n", url)
 	url = strings.Replace(url, "http://gili", "https://gili", -1)
-	fmt.Printf("url af ==> %v\n", url)
 	return url
 }
 
