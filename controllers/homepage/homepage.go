@@ -8,6 +8,9 @@ import (
 	"gishur/translate"
 	"github.com/gofiber/fiber/v2"
 	"github.com/sujit-baniya/flash"
+	"io"
+	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -36,37 +39,51 @@ type RecaptchaResponse struct {
 func Send(ctx *fiber.Ctx) error {
 
 	type sender struct {
-		FirstName   string
-		LastName    string
-		Email       string
-		Phone       string
-		Message     string
-		CopyEmail   string
-		Success     bool     `json:"success"`
-		Score       float64  `json:"score"`
-		Action      string   `json:"action"`
-		ChallengeTS string   `json:"challenge_ts"`
-		Hostname    string   `json:"hostname"`
-		ErrorCodes  []string `json:"error-codes,omitempty"`
+		FirstName string
+		LastName  string
+		Email     string
+		Phone     string
+		Message   string
+		CopyEmail string
+		RecaptchaResponse
 	}
 
 	recaptchaToken := ctx.FormValue("g-recaptcha-response")
-	//if recaptchaToken == "" {
-	//	return ctx.Redirect("/")
-	//}
+	if recaptchaToken == "" {
+		return ctx.Redirect("/")
+	}
 
-	fmt.Printf("==> %v\n", string(ctx.Body()))
+	// Verify reCAPTCHA
+	recaptchaSecret := "6Lfn9z8rAAAAAA6tMnhUJsNU335kuMmgT40uCKjT" // Use your secret key here
+	resp, err := http.PostForm("https://www.google.com/recaptcha/api/siteverify",
+		url.Values{
+			"secret":   {recaptchaSecret},
+			"response": {recaptchaToken},
+		})
 
-	fmt.Printf("==> %v\n", recaptchaToken)
+	mp := fiber.Map{
+		"success": false,
+		"message": "Message sent successfully",
+		"sender":  "",
+		"Phone":   "",
+	}
+
+	if err != nil {
+		return flash.WithSuccess(ctx, mp).RedirectBack("/")
+	}
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+
+		}
+	}(resp.Body)
 
 	var message sender
 	_ = ctx.BodyParser(&message)
+
 	db.DumpPrettyJson(message, "message")
-	mp := fiber.Map{
-		"success": true,
-		"message": "Message sent successfully",
-		"sender":  message,
-		"Phone":   message.Phone,
+	if !message.Success {
+		return flash.WithSuccess(ctx, mp).RedirectBack("/")
 	}
 
 	var p db.Param
