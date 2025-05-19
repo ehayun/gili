@@ -1,6 +1,7 @@
 <footer class="mt-4">
   <div class="xcontainer-fluid">
     <div class="row">
+      {{if $.footer }}
       <div class="col-12">
         <div class="d-block xbg-site bg-opacity-25 rounded p-2">
           <div class="form-container rounded" id="details">
@@ -28,9 +29,9 @@
               </div>
             </form>
           </div>
-
         </div>
       </div>
+      {{end}}
     </div>
     <div class="row mt-4 bg-primary text-light p-4">
       <div class="col-md-3">
