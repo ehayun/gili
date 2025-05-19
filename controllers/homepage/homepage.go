@@ -104,7 +104,7 @@ func Send(ctx *fiber.Ctx) error {
 	mp = fiber.Map{
 		"success": true,
 		"message": "Message sent successfully",
-		"sender":  message.FirstName,
+		"sender":  message,
 		"Phone":   message.Phone,
 	}
 
