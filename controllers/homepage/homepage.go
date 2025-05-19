@@ -115,5 +115,6 @@ func Sitemap(ctx *fiber.Ctx) error {
 }
 
 func Robots(ctx *fiber.Ctx) error {
+	ctx.Response().Header.Set("Content-Type", "text/plain")
 	return ctx.SendFile("uploads/robots.txt")
 }
