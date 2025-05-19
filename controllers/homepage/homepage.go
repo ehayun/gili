@@ -20,7 +20,7 @@ func Index(c *fiber.Ctx) error {
 
 	carousels := cs.List()
 	return c.Render("homepage/index", fiber.Map{
-		"footer": false,
+		"footer": true,
 		"page":   p.Page, "carousels": carousels, "hasCarousels": len(carousels) > 0, "cards": cards.List()})
 }
 
