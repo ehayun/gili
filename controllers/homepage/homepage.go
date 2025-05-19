@@ -1,6 +1,7 @@
 package homepage
 
 import (
+	"encoding/json"
 	"encoding/xml"
 	"fmt"
 	"gishur/controllers/emails"
@@ -45,7 +46,6 @@ func Send(ctx *fiber.Ctx) error {
 		Phone     string
 		Message   string
 		CopyEmail string
-		RecaptchaResponse
 	}
 
 	recaptchaToken := ctx.FormValue("g-recaptcha-response")
@@ -78,13 +78,21 @@ func Send(ctx *fiber.Ctx) error {
 		}
 	}(resp.Body)
 
-	var message sender
-	_ = ctx.BodyParser(&message)
-
-	db.DumpPrettyJson(message, "message")
-	if !message.Success {
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Printf("1==> %#v\n", err)
 		return flash.WithSuccess(ctx, mp).RedirectBack("/")
 	}
+
+	var recaptchaResp RecaptchaResponse
+	err = json.Unmarshal(body, &recaptchaResp)
+	if err != nil {
+		fmt.Printf("2==> %#v\n", err)
+		return flash.WithSuccess(ctx, mp).RedirectBack("/")
+	}
+
+	var message sender
+	_ = ctx.BodyParser(&message)
 
 	var p db.Param
 	param, _ := p.Get()
