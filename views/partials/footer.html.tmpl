@@ -9,17 +9,17 @@
               <!-- Top row: name, email, phone -->
               <div class="d-flex flex-column align-items-center flex-md-row flex-wrap gap-2 justify-content-center mb-2">
                 <input type="text" class="form-control rounded-pill text-start w-100" name="firstName" placeholder="שם"
-                       style="max-width: 230px;"/>
+                       style="max-width: 230px;" required/>
                 <input type="email" class="form-control rounded-pill text-start w-100" name="email" placeholder="אימייל"
-                       style="max-width: 230px;"/>
+                       style="max-width: 230px;" required/>
                 <input type="text" class="form-control rounded-pill text-start w-100" name="phone" placeholder="טלפון"
-                       style="max-width: 230px;"/>
+                       style="max-width: 230px;" required/>
               </div>
 
               <!-- Bottom row: textarea + button -->
               <div class="d-flex flex-column align-items-center flex-md-row gap-2 justify-content-center">
                 <textarea name="message" rows="1" class="form-control rounded-pill text-start w-100" placeholder="הודעה"
-                          style="min-width: 300px; max-width: 600px;"></textarea>
+                          style="min-width: 300px; max-width: 600px;" required></textarea>
                 <button type="submit" class="btn btn-dark rounded-pill px-3 xw-100 w-md-auto">שליחה</button>
               </div>
 
