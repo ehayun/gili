@@ -115,5 +115,5 @@ func Sitemap(ctx *fiber.Ctx) error {
 }
 
 func Robots(ctx *fiber.Ctx) error {
-	return ctx.SendFile("./public/robots.txt")
+	return ctx.SendFile("public/robots.txt")
 }
