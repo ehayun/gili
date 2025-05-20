@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"gishur/config"
 	"gishur/controllers/emails"
 	"gishur/db"
 	"gishur/translate"
@@ -54,7 +55,7 @@ func Send(ctx *fiber.Ctx) error {
 	}
 
 	// Verify reCAPTCHA
-	recaptchaSecret := "6Lfn9z8rAAAAAA6tMnhUJsNU335kuMmgT40uCKjT" // Use your secret key here
+	recaptchaSecret := config.Config.Google.SiteKey // Use your secret key here
 	resp, err := http.PostForm("https://www.google.com/recaptcha/api/siteverify",
 		url.Values{
 			"secret":   {recaptchaSecret},

@@ -5,12 +5,17 @@ import (
 	"log"
 )
 
+type Google struct {
+	SiteKey string `ini:"site-key"`
+}
+
 type appConfig struct {
 	Port       string     `ini:"port"`
 	AppName    string     `ini:"app_name"`
 	Mode       string     `ini:"mode"`
 	MainDb     ConfDB     `ini:"main-db"`
 	MailServer MailServer `ini:"mail"`
+	Google     Google     `ini:"google"`
 }
 
 type ConfDB struct {

@@ -109,6 +109,7 @@ func Web() {
 		m["menus"] = menus
 		m["mode"] = config.Config.Mode
 
+		m["Captcha"] = config.Config.Google.SiteKey
 		m["canonical"] = getPageUrl(ctx)
 		// Bind flash message variables to context
 		_ = ctx.Bind(m)
