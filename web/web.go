@@ -1,6 +1,7 @@
 package web
 
 import (
+	"bytes"
 	"database/sql"
 	"fmt"
 	"gishur/cmd"
@@ -381,27 +382,39 @@ func safe(s string, leng ...int) template.HTML {
 	return template.HTML(s)
 }
 
+// Revised truncateSafe function to correctly handle HTML tags
 func truncateSafe(htmlStr string, limit int) string {
-	// If the string is empty or already within our limit, return it as is.
 	if htmlStr == "" || len(htmlStr) <= limit {
 		return htmlStr
 	}
 
-	// First, cut the string to the desired length.
-	truncated := htmlStr[:limit]
+	buffer := bytes.NewBufferString("")
+	plainTextLength := 0
+	inTag := false
 
-	// Check if we cut the string in the middle of an HTML tag.
-	// We look for the last occurrence of '<' and '>' in the truncated string.
-	lastOpen := strings.LastIndex(truncated, "<")
-	lastClose := strings.LastIndex(truncated, ">")
-	// If the last '<' comes after the last '>', it means we are in the middle of a tag.
-	if lastOpen > lastClose {
-		// Remove the incomplete tag.
-		truncated = truncated[:lastOpen]
+	for _, r := range htmlStr {
+		if r == '<' {
+			inTag = true
+		}
+
+		if !inTag {
+			plainTextLength++
+			if plainTextLength > limit {
+				break
+			}
+		}
+
+		buffer.WriteRune(r)
+
+		if r == '>' {
+			inTag = false
+		}
 	}
 
-	// Optionally, add an ellipsis to indicate that truncation occurred.
-	truncated += "..."
+	truncated := buffer.String()
+	if inTag {
+		truncated = truncated[:strings.LastIndex(truncated, "<")]
+	}
 
-	return truncated
+	return truncated + "..."
 }
