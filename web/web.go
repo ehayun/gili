@@ -371,6 +371,7 @@ func hideNotActive(uid int64) string {
 	}
 	return ""
 }
+
 func safe(s string, leng ...int) template.HTML {
 	if s == "" {
 		return ""
